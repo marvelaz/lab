@@ -1230,4 +1230,74 @@ tr:nth-child(even) {
         width: 100%;
         margin-right: 0 !important;
     }
+}/* 
+Statistics Controls and Summary */
+.stats-controls {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 16px;
+}
+
+.timeframe-selector {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.timeframe-selector label {
+    color: #1a1a1a;
+    font-size: 0.9em;
+}
+
+.timeframe-selector select {
+    font-size: 0.9em;
+    color: #333;
+}
+
+.timeframe-selector select:focus {
+    outline: none;
+    border-color: #333;
+    box-shadow: 0 0 0 2px rgba(51, 51, 51, 0.1);
+}
+
+#refreshStatsBtn:hover {
+    background: #555 !important;
+}
+
+.stats-summary-section .summary-item {
+    text-align: center;
+}
+
+.stats-summary-section .summary-label {
+    font-size: 0.85em;
+    color: #666;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.stats-summary-section .summary-value {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+/* Responsive statistics controls */
+@media (max-width: 768px) {
+    .timeframe-selector {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .timeframe-selector select,
+    .timeframe-selector button {
+        width: 100%;
+        margin: 0;
+    }
+    
+    .stats-summary-section {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
 }

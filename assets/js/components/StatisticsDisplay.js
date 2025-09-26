@@ -12,24 +12,167 @@ class StatisticsDisplay {
     init() {
         this.statsContent = document.getElementById('statsContent');
         this.statsPlaceholder = document.getElementById('statsPlaceholder');
+        this.timeframeSelect = document.getElementById('timeframeSelect');
+        this.refreshStatsBtn = document.getElementById('refreshStatsBtn');
+        this.timeframeInfo = document.getElementById('statsTimeframeInfo');
+        
+        this.setupEventListeners();
         
         console.log('StatisticsDisplay component initialized');
     }
 
     /**
+     * Setup event listeners for statistics controls
+     */
+    setupEventListeners() {
+        if (this.timeframeSelect) {
+            this.timeframeSelect.addEventListener('change', () => {
+                this.handleTimeframeChange();
+            });
+        }
+
+        if (this.refreshStatsBtn) {
+            this.refreshStatsBtn.addEventListener('click', () => {
+                this.handleRefreshStats();
+            });
+        }
+    }
+
+    /**
+     * Handle timeframe selection change
+     */
+    handleTimeframeChange() {
+        const selectedMonths = parseInt(this.timeframeSelect.value);
+        
+        // Dispatch event to trigger statistics refresh
+        const event = new CustomEvent('statisticsTimeframeChanged', {
+            detail: { monthsBack: selectedMonths }
+        });
+        document.dispatchEvent(event);
+    }
+
+    /**
+     * Handle refresh statistics button click
+     */
+    handleRefreshStats() {
+        const selectedMonths = parseInt(this.timeframeSelect.value);
+        
+        // Dispatch event to trigger statistics refresh
+        const event = new CustomEvent('statisticsRefreshRequested', {
+            detail: { monthsBack: selectedMonths }
+        });
+        document.dispatchEvent(event);
+    }
+
+    /**
      * Display statistics data
      * @param {Object} statistics - Statistics data object
+     * @param {Object} timeframeInfo - Information about the timeframe used
      */
-    displayStatistics(statistics) {
+    displayStatistics(statistics, timeframeInfo = null) {
         if (!this.statsContent) return;
 
         this.showStatsContent();
+        
+        // Update timeframe information
+        if (timeframeInfo) {
+            this.updateTimeframeInfo(timeframeInfo);
+        }
         
         // Display all sections using unified card system
         this.displayTopDevicesCard(statistics.topDevices);
         this.displayTopUsersCard(statistics.topUsers);
         this.displayUtilizationCard(statistics.utilizationRates);
         this.displayLeastReservedCard(statistics.leastReservedDevices);
+        
+        // Display summary information
+        if (statistics.summary) {
+            this.displaySummaryInfo(statistics.summary);
+        }
+    }
+
+    /**
+     * Update timeframe information display
+     * @param {Object} timeframeInfo - Timeframe information
+     */
+    updateTimeframeInfo(timeframeInfo) {
+        if (!this.timeframeInfo) return;
+
+        const { monthsBack, totalReservations, dateRange, excludedCount } = timeframeInfo;
+        
+        let timeframeText = '';
+        if (monthsBack === 0) {
+            timeframeText = 'All time';
+        } else {
+            timeframeText = `Last ${monthsBack} month${monthsBack > 1 ? 's' : ''}`;
+        }
+
+        let infoText = `Showing ${totalReservations.toLocaleString()} reservations from ${timeframeText}`;
+        
+        if (dateRange) {
+            infoText += ` (${dateRange.earliest} to ${dateRange.latest})`;
+        }
+        
+        if (excludedCount > 0) {
+            infoText += ` • ${excludedCount} cancelled reservations excluded`;
+        }
+
+        this.timeframeInfo.innerHTML = infoText;
+    }
+
+    /**
+     * Display summary information
+     * @param {Object} summary - Summary statistics
+     */
+    displaySummaryInfo(summary) {
+        // Find a good place to display summary info, or create a summary section
+        const existingSection = document.querySelector('.stats-summary-section');
+        if (existingSection) {
+            existingSection.remove();
+        }
+
+        const summarySection = document.createElement('div');
+        summarySection.className = 'stats-summary-section';
+        summarySection.style.cssText = `
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+        `;
+
+        summarySection.innerHTML = `
+            <div class="summary-item">
+                <div class="summary-label">Total Reservations</div>
+                <div class="summary-value">${summary.totalReservations.toLocaleString()}</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Total Days</div>
+                <div class="summary-value">${summary.totalDays.toLocaleString()}</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Avg Duration</div>
+                <div class="summary-value">${summary.avgDuration} days</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Unique Devices</div>
+                <div class="summary-value">${summary.uniqueDevices}</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Unique Users</div>
+                <div class="summary-value">${summary.uniqueUsers}</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">Regions</div>
+                <div class="summary-value">${summary.uniqueRegions}</div>
+            </div>
+        `;
+
+        // Insert at the beginning of stats content
+        this.statsContent.insertBefore(summarySection, this.statsContent.firstChild);
     }
 
     /**

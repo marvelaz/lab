@@ -60,6 +60,15 @@ class LabEquipmentApp {
             this.handlePageChanged(event.detail.pageId);
         });
 
+        // Statistics timeframe events
+        document.addEventListener('statisticsTimeframeChanged', (event) => {
+            this.handleStatisticsTimeframeChanged(event.detail.monthsBack);
+        });
+
+        document.addEventListener('statisticsRefreshRequested', (event) => {
+            this.handleStatisticsRefreshRequested(event.detail.monthsBack);
+        });
+
         // Error handling
         window.addEventListener('error', (event) => {
             Utils.logError('Global', event.error);
@@ -187,10 +196,11 @@ class LabEquipmentApp {
 
     /**
      * Load and display statistics
+     * @param {number} monthsBack - Number of months to look back (optional)
      */
-    async loadStatistics() {
+    async loadStatistics(monthsBack = null) {
         try {
-            const statsData = this.dataService.getReservationsForStats();
+            const statsData = this.dataService.getReservationsForStats(monthsBack);
             
             if (statsData.length === 0) {
                 this.statisticsDisplay.showNoDataMessage();
@@ -200,13 +210,66 @@ class LabEquipmentApp {
             // Generate statistics
             const statistics = this.statisticsService.generateStatistics(statsData);
             
+            // Get timeframe information
+            const timeframeInfo = this.getTimeframeInfo(monthsBack, statsData);
+            
             // Display statistics
-            this.statisticsDisplay.displayStatistics(statistics);
+            this.statisticsDisplay.displayStatistics(statistics, timeframeInfo);
             
         } catch (error) {
             Utils.logError('App.loadStatistics', error);
             this.showError('Failed to load statistics. Please try again.');
         }
+    }
+
+    /**
+     * Handle statistics timeframe change
+     * @param {number} monthsBack - Number of months to look back
+     */
+    handleStatisticsTimeframeChanged(monthsBack) {
+        if (this.dataService.isDataProcessed()) {
+            this.loadStatistics(monthsBack);
+        }
+    }
+
+    /**
+     * Handle statistics refresh request
+     * @param {number} monthsBack - Number of months to look back
+     */
+    handleStatisticsRefreshRequested(monthsBack) {
+        if (this.dataService.isDataProcessed()) {
+            // Clear statistics cache before refreshing
+            this.statisticsService.clearCache();
+            this.loadStatistics(monthsBack);
+        }
+    }
+
+    /**
+     * Get timeframe information for display
+     * @param {number} monthsBack - Number of months back
+     * @param {Array} statsData - Filtered statistics data
+     * @returns {Object} Timeframe information
+     */
+    getTimeframeInfo(monthsBack, statsData) {
+        const allReservations = this.dataService.getAllReservations();
+        const cancelledCount = allReservations.filter(r => r.hasStatus(CONFIG.STATUS.CANCELLED)).length;
+        
+        // Calculate date range from stats data
+        let dateRange = null;
+        if (statsData.length > 0) {
+            const dates = statsData.map(r => r.startDate).sort((a, b) => a - b);
+            dateRange = {
+                earliest: Utils.formatDate(dates[0]),
+                latest: Utils.formatDate(dates[dates.length - 1])
+            };
+        }
+
+        return {
+            monthsBack: monthsBack || CONFIG.STATS.MONTHS_BACK,
+            totalReservations: statsData.length,
+            dateRange: dateRange,
+            excludedCount: cancelledCount
+        };
     }
 
     /**

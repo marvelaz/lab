@@ -100,16 +100,87 @@ class StatisticsService {
             userStats[user].devices.add(reservation.device);
         });
 
-        return Object.entries(userStats)
+        // Convert to array with basic metrics
+        const usersArray = Object.entries(userStats)
             .map(([user, stats]) => ({
                 user,
                 reservationCount: stats.reservationCount,
                 totalDays: stats.totalDays,
                 uniqueDevices: stats.devices.size,
                 avgDuration: Math.round(stats.totalDays / stats.reservationCount * 10) / 10
-            }))
-            .sort((a, b) => b.reservationCount - a.reservationCount)
+            }));
+
+        // Calculate ranking scores
+        const usersWithScores = this.calculateUserRankingScores(usersArray);
+
+        return usersWithScores
+            .sort((a, b) => b.rankingScore - a.rankingScore)
             .slice(0, CONFIG.STATS.TOP_ITEMS_LIMIT);
+    }
+
+    /**
+     * Calculate unified ranking scores for users
+     * @param {Array} users - Array of user statistics
+     * @returns {Array} Users with ranking scores
+     */
+    calculateUserRankingScores(users) {
+        if (users.length === 0) return users;
+
+        // Find max values for normalization
+        const maxReservations = Math.max(...users.map(u => u.reservationCount));
+        const maxTotalDays = Math.max(...users.map(u => u.totalDays));
+        const maxUniqueDevices = Math.max(...users.map(u => u.uniqueDevices));
+        const maxAvgDuration = Math.max(...users.map(u => u.avgDuration));
+
+        // Calculate scores with weighted components
+        return users.map(user => {
+            // Normalize each metric to 0-1 scale
+            const reservationScore = user.reservationCount / maxReservations;
+            const totalDaysScore = user.totalDays / maxTotalDays;
+            const deviceDiversityScore = user.uniqueDevices / maxUniqueDevices;
+            
+            // For average duration, we want to reward reasonable durations
+            // Very short durations (< 1 day) and very long durations (> 30 days) get lower scores
+            const avgDurationScore = this.calculateDurationScore(user.avgDuration, maxAvgDuration);
+
+            // Weighted combination of scores
+            // Activity frequency (40%) + Total usage (30%) + Device diversity (20%) + Duration efficiency (10%)
+            const rankingScore = Math.round((
+                reservationScore * 0.4 +
+                totalDaysScore * 0.3 +
+                deviceDiversityScore * 0.2 +
+                avgDurationScore * 0.1
+            ) * 100);
+
+            return {
+                ...user,
+                rankingScore
+            };
+        });
+    }
+
+    /**
+     * Calculate duration efficiency score
+     * @param {number} avgDuration - Average duration in days
+     * @param {number} maxAvgDuration - Maximum average duration
+     * @returns {number} Duration score (0-1)
+     */
+    calculateDurationScore(avgDuration, maxAvgDuration) {
+        // Optimal duration range is 2-14 days
+        const optimalMin = 2;
+        const optimalMax = 14;
+
+        if (avgDuration >= optimalMin && avgDuration <= optimalMax) {
+            // Perfect score for optimal range
+            return 1.0;
+        } else if (avgDuration < optimalMin) {
+            // Penalize very short durations (might indicate inefficient usage)
+            return Math.max(0.3, avgDuration / optimalMin * 0.8);
+        } else {
+            // Penalize very long durations (might indicate hoarding)
+            const penalty = Math.min(avgDuration / optimalMax, maxAvgDuration / optimalMax);
+            return Math.max(0.2, 1.0 - (penalty - 1.0) * 0.5);
+        }
     }
 
     /**

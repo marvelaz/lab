@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lab Equipment Management System</title>
     <link rel="stylesheet" href="assets/css/styles.css">
 </head>
+
 <body>
     <div class="container">
         <div class="nav-header">
@@ -56,42 +58,25 @@
                 <div id="statsContent" style="display: none;">
                     <div class="stats-grid">
                         <div class="stats-section">
-                            <h3 class="stats-title">Top 10 Most Used Devices by Region (Last 6 Months)</h3>
-                            <div id="topDevicesChart" class="chart-container"></div>
+                            <h3 class="stats-title">Top Devices by Region</h3>
+                            <div id="topDevicesChart"></div>
                         </div>
 
                         <div class="stats-section">
-                            <h3 class="stats-title">Top 10 Active Users</h3>
-                            <table class="stats-table" id="topUsersTable">
-                                <thead>
-                                    <tr>
-                                        <th>Rank</th>
-                                        <th>User</th>
-                                        <th>Devices Reserved</th>
-                                        <th>Total Days</th>
-                                        <th>Avg Duration</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
+                            <h3 class="stats-title">Top Active Users</h3>
+                            <div id="topUsersTable"></div>
                         </div>
                     </div>
 
                     <div class="stats-grid">
                         <div class="stats-section">
-                            <h3 class="stats-title">Equipment Utilization Rate by Region</h3>
-                            <div class="tab-container">
-                                <div class="tab-buttons" id="utilizationTabs"></div>
-                                <div class="tab-content" id="utilizationTabContent"></div>
-                            </div>
+                            <h3 class="stats-title">Equipment Utilization by Region</h3>
+                            <div id="utilizationTabs"></div>
                         </div>
 
                         <div class="stats-section">
                             <h3 class="stats-title">Least Reserved Devices by Region</h3>
-                            <div class="tab-container">
-                                <div class="tab-buttons" id="leastReservedTabs"></div>
-                                <div class="tab-content" id="leastReservedTabContent"></div>
-                            </div>
+                            <div id="leastReservedTabs"></div>
                         </div>
                     </div>
                 </div>
@@ -108,7 +93,7 @@
     <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    
+
     <!-- Application Scripts -->
     <script src="assets/js/config.js"></script>
     <script src="assets/js/utils.js"></script>
@@ -122,4 +107,5 @@
     <script src="assets/js/components/StatisticsDisplay.js"></script>
     <script src="assets/js/app.js"></script>
 </body>
+
 </html>

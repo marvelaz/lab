@@ -447,6 +447,218 @@ tr:nth-child(even) {
     font-weight: 600;
 }
 
+/* Unified Statistics Card System */
+.unified-stats-card {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.unified-tabs {
+    width: 100%;
+}
+
+.unified-tab-buttons {
+    display: flex;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e5e5e5;
+    margin: 0;
+}
+
+.unified-tab-btn {
+    background: transparent;
+    border: none;
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 500;
+    color: #666;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    flex: 1;
+    text-align: center;
+}
+
+.unified-tab-btn:hover {
+    color: #333;
+    background: #e9ecef;
+}
+
+.unified-tab-btn.active {
+    color: #333;
+    border-bottom-color: #333;
+    background: white;
+}
+
+.unified-tab-content {
+    min-height: 200px;
+}
+
+.unified-tab-pane {
+    display: none;
+    padding: 20px;
+}
+
+.unified-tab-pane.active {
+    display: block;
+}
+
+.single-region {
+    padding: 20px;
+}
+
+.region-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.unified-data-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.unified-data-item:hover {
+    background: #e9ecef;
+    border-color: #dee2e6;
+}
+
+.item-rank {
+    background: #333;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: 600;
+    margin-right: 15px;
+    min-width: 35px;
+    text-align: center;
+}
+
+.item-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.item-name {
+    font-weight: 600;
+    color: #1a1a1a;
+    font-size: 0.95em;
+}
+
+.item-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #333;
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+.progress-label {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #333;
+    min-width: 40px;
+    text-align: right;
+}
+
+.item-metrics {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.metric {
+    font-size: 0.8em;
+    color: #666;
+    background: white;
+    padding: 2px 8px;
+    border-radius: 3px;
+    border: 1px solid #e9ecef;
+}
+
+.item-ranking-score {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0;
+}
+
+.ranking-score-label {
+    font-size: 0.85em;
+    color: #666;
+    font-weight: 500;
+}
+
+.ranking-score-value {
+    background: linear-gradient(135deg, #333 0%, #555 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.9em;
+    font-weight: 600;
+    min-width: 50px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.ranking-score-badge {
+    background: linear-gradient(135deg, #333 0%, #555 100%);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 0.75em;
+    font-weight: 600;
+    margin-left: 8px;
+    display: inline-block;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.stats-list {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.chart-section {
+    padding: 20px;
+    height: 300px;
+}
+
+.stats-chart {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.no-data {
+    padding: 40px 20px;
+    text-align: center;
+    color: #666;
+    font-style: italic;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .stats-grid {
@@ -477,5 +689,35 @@ tr:nth-child(even) {
     .tab-btn {
         padding: 10px 15px;
         font-size: 0.85em;
+    }
+
+    .unified-tab-buttons {
+        flex-wrap: wrap;
+    }
+    
+    .unified-tab-btn {
+        padding: 10px 15px;
+        font-size: 0.85em;
+        flex: 1 1 auto;
+        min-width: 120px;
+    }
+    
+    .unified-data-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .item-rank {
+        margin-right: 0;
+        align-self: flex-start;
+    }
+    
+    .item-metrics {
+        gap: 8px;
+    }
+    
+    .metric {
+        font-size: 0.75em;
     }
 }

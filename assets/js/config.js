@@ -40,6 +40,15 @@ const CONFIG = {
         CANCELLED: 'cancelled'
     },
 
+    // Power usage settings
+    POWER: {
+        COST_PER_KWH: 0.12, // $0.12 per kWh (adjust for your region)
+        CO2_PER_KWH: 0.4, // kg CO2 per kWh (adjust for your grid)
+        CURRENCY: 'USD',
+        NETBOX_URL: null, // To be configured
+        APC_URL: null     // To be configured
+    },
+
     // CSV column mappings
     CSV_COLUMNS: {
         ID: 'ID',

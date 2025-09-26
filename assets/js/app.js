@@ -4,11 +4,13 @@ class LabEquipmentApp {
         this.dataService = new DataService();
         this.conflictService = new ConflictService();
         this.statisticsService = new StatisticsService();
+        this.powerUsageService = new PowerUsageService();
         
         this.navigation = new Navigation();
         this.fileUpload = new FileUpload(this.dataService);
         this.conflictDisplay = new ConflictDisplay();
         this.statisticsDisplay = new StatisticsDisplay();
+        this.powerDisplay = new PowerDisplay();
         
         this.init();
     }
@@ -24,6 +26,14 @@ class LabEquipmentApp {
         this.fileUpload.init();
         this.conflictDisplay.init();
         this.statisticsDisplay.init();
+        this.powerDisplay.init();
+        
+        // Initialize power service with configuration
+        this.powerUsageService.init({
+            netboxUrl: CONFIG.POWER.NETBOX_URL,
+            apcUrl: CONFIG.POWER.APC_URL,
+            apiKeys: {} // Add your API keys here
+        });
         
         // Set up event listeners
         this.setupEventListeners();
@@ -170,6 +180,8 @@ class LabEquipmentApp {
     handlePageChanged(pageId) {
         if (pageId === 'statistics' && this.dataService.isDataProcessed()) {
             this.loadStatistics();
+        } else if (pageId === 'power' && this.dataService.isDataProcessed()) {
+            this.loadPowerStatistics();
         }
     }
 
@@ -220,6 +232,36 @@ class LabEquipmentApp {
     }
 
     /**
+     * Load and display power statistics
+     */
+    async loadPowerStatistics() {
+        try {
+            Utils.toggleLoading(true);
+            
+            const statsData = this.dataService.getReservationsForStats();
+            
+            if (statsData.length === 0) {
+                this.powerDisplay.showNoDataMessage();
+                Utils.toggleLoading(false);
+                return;
+            }
+
+            // Generate power statistics
+            const powerStatistics = await this.powerUsageService.generatePowerStatistics(statsData);
+            
+            // Display power statistics
+            this.powerDisplay.displayPowerStatistics(powerStatistics);
+            
+            Utils.toggleLoading(false);
+            
+        } catch (error) {
+            Utils.logError('App.loadPowerStatistics', error);
+            Utils.toggleLoading(false);
+            this.showError('Failed to load power statistics. Please try again.');
+        }
+    }
+
+    /**
      * Reset application state
      */
     reset() {
@@ -227,6 +269,7 @@ class LabEquipmentApp {
         this.conflictService.reset();
         this.conflictDisplay.clear();
         this.statisticsDisplay.clear();
+        this.powerDisplay.clear();
         
         // Reset UI
         Utils.toggleLoading(false);

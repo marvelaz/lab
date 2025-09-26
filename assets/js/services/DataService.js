@@ -26,8 +26,12 @@ class DataService {
                     try {
                         this.rawData = results.data;
                         this.processData();
-                        console.log(`Loaded ${this.reservations.length} reservations`);
-                        resolve(this.reservations);
+                        console.log(`Loaded ${this.reservations.length} valid reservations from ${this.rawData.length} total rows`);
+                        resolve({
+                            reservations: this.reservations,
+                            totalRows: this.rawData.length,
+                            validRows: this.reservations.length
+                        });
                     } catch (error) {
                         Utils.logError('DataService.loadCSVFile', error);
                         reject(error);

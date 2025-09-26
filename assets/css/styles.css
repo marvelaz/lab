@@ -721,3 +721,460 @@ tr:nth-child(even) {
         font-size: 0.75em;
     }
 }
+
+/* Power Usage Statistics Styles */
+.power-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.power-summary-card {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.2s ease;
+}
+
+.power-summary-card:hover {
+    border-color: #333;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.card-icon {
+    font-size: 2em;
+    opacity: 0.8;
+}
+
+.card-content {
+    flex: 1;
+}
+
+.card-value {
+    font-size: 1.4em;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+}
+
+.card-title {
+    font-size: 0.9em;
+    color: #666;
+    font-weight: 500;
+}
+
+/* Power card specific colors */
+.energy-card { border-left: 4px solid #ffc107; }
+.cost-card { border-left: 4px solid #28a745; }
+.carbon-card { border-left: 4px solid #17a2b8; }
+.power-card { border-left: 4px solid #6f42c1; }
+.peak-card { border-left: 4px solid #dc3545; }
+.coverage-card { border-left: 4px solid #6c757d; }
+
+/* Power device list */
+.power-device-list, .power-user-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+}
+
+.power-device-item, .power-user-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.power-device-item:hover, .power-user-item:hover {
+    background: #e9ecef;
+    border-color: #dee2e6;
+}
+
+.device-rank, .user-rank {
+    background: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    margin-right: 15px;
+    min-width: 40px;
+    text-align: center;
+}
+
+.device-info, .user-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.device-name, .user-name {
+    font-weight: 600;
+    color: #1a1a1a;
+    font-size: 1em;
+}
+
+.device-metrics, .user-metrics {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.power-metric {
+    font-size: 0.8em;
+    color: #666;
+    background: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+}
+
+.power-metric.energy { border-left: 3px solid #ffc107; }
+.power-metric.cost { border-left: 3px solid #28a745; }
+.power-metric.efficiency { border-left: 3px solid #17a2b8; }
+.power-metric.power { border-left: 3px solid #6f42c1; }
+.power-metric.carbon { border-left: 3px solid #dc3545; }
+.power-metric.reservations { border-left: 3px solid #6c757d; }
+
+.power-bar {
+    height: 6px;
+    background: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.power-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745 0%, #ffc107 70%, #dc3545 100%);
+    transition: width 0.3s ease;
+    border-radius: 3px;
+}
+
+/* Efficiency indicators */
+.high-efficiency { border-left: 4px solid #28a745; }
+.medium-efficiency { border-left: 4px solid #ffc107; }
+.low-efficiency { border-left: 4px solid #dc3545; }
+
+/* User power score */
+.user-power-score {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0;
+}
+
+.score-label {
+    font-size: 0.85em;
+    color: #666;
+    font-weight: 500;
+}
+
+.score-value {
+    background: linear-gradient(135deg, #333 0%, #555 100%);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 0.8em;
+    font-weight: 600;
+    min-width: 45px;
+    text-align: center;
+}
+
+/* Region power content */
+.region-power-content {
+    padding: 20px;
+}
+
+.region-power-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.region-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.metric-label {
+    font-size: 0.85em;
+    color: #666;
+    font-weight: 500;
+}
+
+.metric-value {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.region-power-chart {
+    height: 200px;
+    margin-top: 20px;
+}
+
+.region-power-canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Power efficiency gauge */
+.efficiency-content {
+    padding: 20px;
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.efficiency-gauge {
+    flex-shrink: 0;
+}
+
+.gauge-container {
+    position: relative;
+    width: 120px;
+    height: 60px;
+    overflow: hidden;
+}
+
+.gauge-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 120px;
+    height: 120px;
+    border: 8px solid #e9ecef;
+    border-radius: 50%;
+    border-bottom-color: #333;
+    transform-origin: center bottom;
+    transition: transform 0.5s ease;
+}
+
+.gauge-center {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+.gauge-value {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.gauge-label {
+    font-size: 0.8em;
+    color: #666;
+}
+
+.efficiency-tips {
+    flex: 1;
+}
+
+.efficiency-tips h4 {
+    margin-bottom: 12px;
+    color: #1a1a1a;
+}
+
+.efficiency-tips ul {
+    list-style: none;
+    padding: 0;
+}
+
+.efficiency-tips li {
+    padding: 6px 0;
+    color: #666;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.efficiency-tips li:before {
+    content: "💡 ";
+    margin-right: 8px;
+}
+
+/* Cost analysis */
+.cost-analysis-content {
+    padding: 20px;
+}
+
+.cost-breakdown {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.cost-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+}
+
+.cost-label {
+    font-size: 0.9em;
+    color: #666;
+    font-weight: 500;
+}
+
+.cost-value {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.cost-chart-container {
+    height: 250px;
+    margin-top: 20px;
+}
+
+.cost-chart {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Power trends */
+.trends-content {
+    padding: 20px;
+}
+
+.trends-chart-container {
+    margin-bottom: 30px;
+}
+
+.trends-chart-container h4 {
+    margin-bottom: 15px;
+    color: #1a1a1a;
+    font-size: 1.1em;
+}
+
+.monthly-trends-chart, .daily-trends-chart {
+    width: 100% !important;
+    height: 250px !important;
+}
+
+/* Responsive power styles */
+@media (max-width: 768px) {
+    .power-summary-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    
+    .power-summary-card {
+        padding: 15px;
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .card-icon {
+        font-size: 1.5em;
+    }
+    
+    .card-value {
+        font-size: 1.2em;
+    }
+    
+    .device-metrics, .user-metrics {
+        gap: 8px;
+    }
+    
+    .power-metric {
+        font-size: 0.75em;
+        padding: 2px 6px;
+    }
+    
+    .efficiency-content {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+    }
+    
+    .cost-breakdown {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .region-power-summary {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+/* File Upload Info Styles */
+.file-info {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 16px;
+    margin-top: 12px;
+}
+
+.file-name {
+    font-weight: 600;
+    color: #1a1a1a;
+    font-size: 1em;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.file-details {
+    font-size: 0.85em;
+    color: #666;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.file-details span {
+    background: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+    white-space: nowrap;
+}
+
+/* Upload error styles */
+.upload-error {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 12px;
+    margin-top: 16px;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Drag and drop highlight */
+.upload-section.drag-highlight {
+    background: #e3f2fd;
+    border-color: #2196f3;
+}
+
+@media (max-width: 768px) {
+    .file-details {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .file-details span {
+        display: inline-block;
+    }
+}

@@ -14,6 +14,7 @@
             <div class="nav-tabs">
                 <button class="nav-tab active" data-page="validation">Conflict Validation</button>
                 <button class="nav-tab" data-page="statistics">Usage Statistics</button>
+                <button class="nav-tab" data-page="power">Power Usage</button>
             </div>
         </div>
 
@@ -88,6 +89,63 @@
                 </div>
             </div>
         </div>
+
+        <!-- Power Usage Page -->
+        <div id="power" class="page">
+            <div class="page-content">
+                <div class="header">
+                    <h1>Power Usage Analytics</h1>
+                    <p>Monitor energy consumption, costs, and efficiency across lab equipment</p>
+                </div>
+
+                <div id="powerContent" style="display: none;">
+                    <!-- Power Summary Cards -->
+                    <div id="powerSummaryCards"></div>
+
+                    <div class="stats-grid">
+                        <div class="stats-section">
+                            <h3 class="stats-title">Device Power Consumption</h3>
+                            <div id="devicePowerChart"></div>
+                        </div>
+
+                        <div class="stats-section">
+                            <h3 class="stats-title">Regional Power Usage</h3>
+                            <div id="regionPowerUsage"></div>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stats-section">
+                            <h3 class="stats-title">User Power Impact</h3>
+                            <div id="userPowerImpact"></div>
+                        </div>
+
+                        <div class="stats-section">
+                            <h3 class="stats-title">Power Efficiency</h3>
+                            <div id="powerEfficiency"></div>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stats-section">
+                            <h3 class="stats-title">Cost Analysis</h3>
+                            <div id="costAnalysis"></div>
+                        </div>
+
+                        <div class="stats-section">
+                            <h3 class="stats-title">Power Trends</h3>
+                            <div id="powerTrends"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="powerPlaceholder" class="upload-section">
+                    <h3>No Power Data Available</h3>
+                    <p>Please upload and validate reservations data first to view power usage analytics.</p>
+                    <button id="goToPowerValidationBtn" class="upload-btn">Go to Validation Page</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- External Libraries -->
@@ -101,10 +159,12 @@
     <script src="assets/js/services/DataService.js"></script>
     <script src="assets/js/services/ConflictService.js"></script>
     <script src="assets/js/services/StatisticsService.js"></script>
+    <script src="assets/js/services/PowerUsageService.js"></script>
     <script src="assets/js/components/Navigation.js"></script>
     <script src="assets/js/components/FileUpload.js"></script>
     <script src="assets/js/components/ConflictDisplay.js"></script>
     <script src="assets/js/components/StatisticsDisplay.js"></script>
+    <script src="assets/js/components/PowerDisplay.js"></script>
     <script src="assets/js/app.js"></script>
 </body>
 

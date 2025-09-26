@@ -155,15 +155,24 @@ class FileUpload {
         try {
             this.setLoadingState(true);
             
-            const reservations = await this.dataService.loadCSVFile(file);
+            // Show processing status
+            this.updateFileDisplay(file, 'processing');
+            
+            const result = await this.dataService.loadCSVFile(file);
             
             this.setLoadingState(false);
+            
+            // Update file display with row counts
+            this.updateFileDisplay(file, {
+                totalRows: result.totalRows,
+                validRows: result.validRows
+            });
             this.updateUI();
             
             // Dispatch file loaded event
-            this.dispatchFileUploadedEvent(file, reservations);
+            this.dispatchFileUploadedEvent(file, result.reservations);
             
-            console.log(`Successfully loaded ${reservations.length} reservations`);
+            console.log(`Successfully loaded ${result.validRows} valid reservations from ${result.totalRows} total rows`);
             
         } catch (error) {
             this.setLoadingState(false);
@@ -188,17 +197,32 @@ class FileUpload {
     /**
      * Update file display
      * @param {File} file - Selected file
+     * @param {number|string|Object} rowCount - Number of rows, "processing", row object, or null
      */
-    updateFileDisplay(file) {
+    updateFileDisplay(file, rowCount = null) {
         const fileSize = this.formatFileSize(file.size);
         const lastModified = new Date(file.lastModified).toLocaleDateString();
+        
+        let rowInfo = '';
+        if (rowCount === 'processing') {
+            rowInfo = ` • <span>Processing...</span>`;
+        } else if (typeof rowCount === 'number') {
+            rowInfo = ` • <span>Rows: ${rowCount.toLocaleString()}</span>`;
+        } else if (rowCount && typeof rowCount === 'object') {
+            const { totalRows, validRows } = rowCount;
+            if (totalRows === validRows) {
+                rowInfo = ` • <span>Rows: ${totalRows.toLocaleString()}</span>`;
+            } else {
+                rowInfo = ` • <span>Rows: ${validRows.toLocaleString()} valid / ${totalRows.toLocaleString()} total</span>`;
+            }
+        }
         
         this.fileName.innerHTML = `
             <div class="file-info">
                 <div class="file-name">📄 ${file.name}</div>
                 <div class="file-details">
                     <span>Size: ${fileSize}</span> • 
-                    <span>Modified: ${lastModified}</span>
+                    <span>Modified: ${lastModified}</span>${rowInfo}
                 </div>
             </div>
         `;

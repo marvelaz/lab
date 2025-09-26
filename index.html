@@ -29,6 +29,9 @@
                 <div class="upload-section">
                     <h3>Upload Reservations File</h3>
                     <p>Select your reservations.csv file to validate booking conflicts</p>
+                    <p style="font-size: 0.85em; color: #666; margin-top: 8px;">
+                        💡 Same-day reservations (start date = end date) are supported and count as 1-day reservations
+                    </p>
                     <input type="file" id="csvFile" accept=".csv" class="file-input">
                     <button id="uploadBtn" class="upload-btn">Choose CSV File</button>
                     <button id="validateBtn" class="validate-btn" disabled>Validate Reservations</button>

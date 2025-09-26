@@ -22,7 +22,7 @@ class Reservation {
                this.labRegion && 
                Utils.isValidDate(this.startDate) && 
                Utils.isValidDate(this.endDate) &&
-               this.startDate < this.endDate;
+               this.startDate <= this.endDate; // Allow same-day reservations
     }
 
     /**
@@ -58,7 +58,9 @@ class Reservation {
      */
     getDurationInDays() {
         const diffTime = Math.abs(this.endDate - this.startDate);
-        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        // Same-day reservations should count as 1 day
+        return days === 0 ? 1 : days;
     }
 
     /**

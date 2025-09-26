@@ -20,7 +20,7 @@ class FileUpload {
 
         this.setupEventListeners();
         this.updateUI();
-        
+
         console.log('FileUpload component initialized');
     }
 
@@ -52,7 +52,7 @@ class FileUpload {
      */
     setupDragAndDrop() {
         const uploadSection = document.querySelector('.upload-section');
-        
+
         if (!uploadSection) return;
 
         // Prevent default drag behaviors
@@ -111,10 +111,10 @@ class FileUpload {
 
             this.currentFile = file;
             this.updateFileDisplay(file);
-            
+
             // Load and process file
             await this.loadFile(file);
-            
+
         } catch (error) {
             Utils.logError('FileUpload.handleFileSelection', error);
             this.showError('Failed to process file. Please try again.');
@@ -154,14 +154,14 @@ class FileUpload {
     async loadFile(file) {
         try {
             this.setLoadingState(true);
-            
+
             // Show processing status
             this.updateFileDisplay(file, 'processing');
-            
+
             const result = await this.dataService.loadCSVFile(file);
-            
+
             this.setLoadingState(false);
-            
+
             // Update file display with row counts
             this.updateFileDisplay(file, {
                 totalRows: result.totalRows,
@@ -169,12 +169,12 @@ class FileUpload {
                 invalidRows: result.invalidRows
             });
             this.updateUI();
-            
+
             // Dispatch file loaded event
             this.dispatchFileUploadedEvent(file, result.reservations);
-            
+
             console.log(`Successfully loaded ${result.validRows} valid reservations from ${result.totalRows} total rows`);
-            
+
         } catch (error) {
             this.setLoadingState(false);
             throw error;
@@ -203,7 +203,7 @@ class FileUpload {
     updateFileDisplay(file, rowCount = null) {
         const fileSize = this.formatFileSize(file.size);
         const lastModified = new Date(file.lastModified).toLocaleDateString();
-        
+
         let rowInfo = '';
         if (rowCount === 'processing') {
             rowInfo = ` • <span>Processing...</span>`;
@@ -221,7 +221,7 @@ class FileUpload {
                 }
             }
         }
-        
+
         this.fileName.innerHTML = `
             <div class="file-info">
                 <div class="file-name">📄 ${file.name}</div>
@@ -231,9 +231,9 @@ class FileUpload {
                 </div>
             </div>
         `;
-        
+
         this.fileName.style.display = 'block';
-        
+
         // Add click handler for invalid rows link
         const invalidRowsLink = this.fileName.querySelector('.invalid-rows-link');
         if (invalidRowsLink) {
@@ -250,11 +250,11 @@ class FileUpload {
      */
     formatFileSize(bytes) {
         if (bytes === 0) return '0 Bytes';
-        
+
         const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
-        
+
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
@@ -275,10 +275,10 @@ class FileUpload {
     updateUI() {
         const hasFile = this.currentFile !== null;
         const hasData = this.dataService.isDataProcessed();
-        
+
         // Update validate button state
         this.validateBtn.disabled = !hasData;
-        
+
         // Update button text
         if (hasFile && hasData) {
             this.validateBtn.textContent = 'Validate Reservations';
@@ -296,7 +296,7 @@ class FileUpload {
     setLoadingState(loading) {
         this.uploadBtn.disabled = loading;
         this.validateBtn.disabled = loading;
-        
+
         if (loading) {
             this.uploadBtn.textContent = 'Processing...';
         } else {
@@ -311,7 +311,7 @@ class FileUpload {
     showError(message) {
         // Create or update error display
         let errorDiv = document.querySelector('.upload-error');
-        
+
         if (!errorDiv) {
             errorDiv = document.createElement('div');
             errorDiv.className = 'upload-error';
@@ -324,13 +324,13 @@ class FileUpload {
                 border-radius: 4px;
                 font-size: 14px;
             `;
-            
+
             this.fileName.parentNode.appendChild(errorDiv);
         }
-        
+
         errorDiv.textContent = message;
         errorDiv.style.display = 'block';
-        
+
         // Auto-hide after 5 seconds
         setTimeout(() => {
             if (errorDiv) {
@@ -364,7 +364,7 @@ class FileUpload {
                 reservationCount: reservations.length
             }
         });
-        
+
         document.dispatchEvent(event);
     }
 
@@ -374,7 +374,7 @@ class FileUpload {
      */
     getCurrentFileInfo() {
         if (!this.currentFile) return null;
-        
+
         return {
             name: this.currentFile.name,
             size: this.currentFile.size,
@@ -391,7 +391,7 @@ class FileUpload {
 
         const invalidRows = this.dataService.getInvalidRows();
         const validationSummary = this.dataService.getValidationSummary();
-        
+
         if (invalidRows.length === 0) {
             alert('No invalid rows found!');
             return;
@@ -400,7 +400,7 @@ class FileUpload {
         // Create modal
         const modal = this.createInvalidRowsModal(invalidRows, validationSummary);
         document.body.appendChild(modal);
-        
+
         // Show modal
         modal.style.display = 'flex';
     }
@@ -506,9 +506,9 @@ class FileUpload {
         return invalidRows.map(invalidRow => {
             const issuesHTML = invalidRow.issues.map(issue => {
                 const severityColor = issue.severity === 'error' ? '#dc3545' : '#ffc107';
-                const suggestionHTML = issue.suggestion ? 
+                const suggestionHTML = issue.suggestion ?
                     `<div style="font-size: 0.8em; color: #666; margin-top: 4px;">💡 ${issue.suggestion}</div>` : '';
-                
+
                 return `
                     <div style="margin-bottom: 8px; padding: 8px; background: ${issue.severity === 'error' ? '#f8d7da' : '#fff3cd'}; border-radius: 4px;">
                         <div style="font-weight: 600; color: ${severityColor};">
@@ -540,17 +540,17 @@ class FileUpload {
     async handleAutoFix(modal) {
         const autoFixBtn = modal.querySelector('#autoFixBtn');
         const originalText = autoFixBtn.textContent;
-        
+
         autoFixBtn.textContent = '🔧 Fixing...';
         autoFixBtn.disabled = true;
 
         try {
             const fixResults = this.dataService.attemptAutoFix();
-            
+
             if (fixResults.fixedCount > 0) {
                 // Apply the fixes
                 this.dataService.applyFixes(fixResults.fixedRows);
-                
+
                 // Update file display
                 this.updateFileDisplay(this.currentFile, {
                     totalRows: fixResults.totalAttempted + this.dataService.reservations.length,
@@ -560,14 +560,14 @@ class FileUpload {
 
                 // Show success message
                 alert(`Successfully fixed ${fixResults.fixedCount} out of ${fixResults.totalAttempted} invalid rows!`);
-                
+
                 // Close modal and refresh if all fixed
                 if (fixResults.stillInvalidCount === 0) {
                     document.body.removeChild(modal);
                 } else {
                     // Refresh modal with remaining invalid rows
                     const newModal = this.createInvalidRowsModal(
-                        fixResults.stillInvalidRows, 
+                        fixResults.stillInvalidRows,
                         this.dataService.getValidationSummary()
                     );
                     document.body.replaceChild(newModal, modal);
@@ -591,7 +591,7 @@ class FileUpload {
      */
     exportInvalidRows(invalidRows) {
         const csvData = [];
-        
+
         // Add headers
         csvData.push(['Row Number', 'Field', 'Issue', 'Current Value', 'Severity', 'Suggestion']);
 
@@ -610,14 +610,14 @@ class FileUpload {
         });
 
         // Convert to CSV string
-        const csvString = csvData.map(row => 
+        const csvString = csvData.map(row =>
             row.map(field => `"${field}"`).join(',')
         ).join('\n');
 
         // Download file
         const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
-        
+
         if (link.download !== undefined) {
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);

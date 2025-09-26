@@ -19,7 +19,12 @@ const Utils = {
         const start = new Date(startDate);
         const end = new Date(endDate);
         const diffTime = Math.abs(end - start);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        // Same-day reservations should count as 1 day
+        if (diffDays === 0) {
+            diffDays = 1;
+        }
         
         if (diffDays === 1) {
             return '1 day';

@@ -162,10 +162,10 @@ class DataService {
         
         // Check date logic
         if (Utils.isValidDate(reservation.startDate) && Utils.isValidDate(reservation.endDate)) {
-            if (reservation.startDate >= reservation.endDate) {
+            if (reservation.startDate > reservation.endDate) {
                 issues.push({
                     field: 'Date Range',
-                    issue: 'Start date must be before end date',
+                    issue: 'Start date must be before or equal to end date',
                     value: `${rawRow[CONFIG.CSV_COLUMNS.START_DATE]} to ${rawRow[CONFIG.CSV_COLUMNS.END_DATE]}`,
                     severity: 'error'
                 });

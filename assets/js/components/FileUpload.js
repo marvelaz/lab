@@ -165,7 +165,8 @@ class FileUpload {
             // Update file display with row counts
             this.updateFileDisplay(file, {
                 totalRows: result.totalRows,
-                validRows: result.validRows
+                validRows: result.validRows,
+                invalidRows: result.invalidRows
             });
             this.updateUI();
             
@@ -209,11 +210,15 @@ class FileUpload {
         } else if (typeof rowCount === 'number') {
             rowInfo = ` • <span>Rows: ${rowCount.toLocaleString()}</span>`;
         } else if (rowCount && typeof rowCount === 'object') {
-            const { totalRows, validRows } = rowCount;
+            const { totalRows, validRows, invalidRows } = rowCount;
             if (totalRows === validRows) {
                 rowInfo = ` • <span>Rows: ${totalRows.toLocaleString()}</span>`;
             } else {
+                const invalidCount = invalidRows ? invalidRows.length : (totalRows - validRows);
                 rowInfo = ` • <span>Rows: ${validRows.toLocaleString()} valid / ${totalRows.toLocaleString()} total</span>`;
+                if (invalidCount > 0) {
+                    rowInfo += ` • <span class="invalid-rows-link" style="color: #dc3545; cursor: pointer; text-decoration: underline;">${invalidCount} invalid rows</span>`;
+                }
             }
         }
         
@@ -228,6 +233,14 @@ class FileUpload {
         `;
         
         this.fileName.style.display = 'block';
+        
+        // Add click handler for invalid rows link
+        const invalidRowsLink = this.fileName.querySelector('.invalid-rows-link');
+        if (invalidRowsLink) {
+            invalidRowsLink.addEventListener('click', () => {
+                this.showInvalidRowsModal();
+            });
+        }
     }
 
     /**
@@ -368,6 +381,252 @@ class FileUpload {
             type: this.currentFile.type,
             lastModified: this.currentFile.lastModified
         };
+    }
+
+    /**
+     * Show invalid rows modal for inspection and fixing
+     */
+    showInvalidRowsModal() {
+        if (!this.dataService.isDataProcessed()) return;
+
+        const invalidRows = this.dataService.getInvalidRows();
+        const validationSummary = this.dataService.getValidationSummary();
+        
+        if (invalidRows.length === 0) {
+            alert('No invalid rows found!');
+            return;
+        }
+
+        // Create modal
+        const modal = this.createInvalidRowsModal(invalidRows, validationSummary);
+        document.body.appendChild(modal);
+        
+        // Show modal
+        modal.style.display = 'flex';
+    }
+
+    /**
+     * Create invalid rows modal
+     * @param {Array} invalidRows - Array of invalid row objects
+     * @param {Object} validationSummary - Validation summary
+     * @returns {HTMLElement} Modal element
+     */
+    createInvalidRowsModal(invalidRows, validationSummary) {
+        const modal = document.createElement('div');
+        modal.className = 'invalid-rows-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        `;
+
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = `
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        `;
+
+        modalContent.innerHTML = `
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e5e5e5; padding-bottom: 16px;">
+                <h2 style="margin: 0; color: #1a1a1a;">Invalid Rows Analysis</h2>
+                <button class="close-modal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+            </div>
+            
+            <div class="validation-summary" style="background: #f8f9fa; padding: 16px; border-radius: 6px; margin-bottom: 20px;">
+                <h3 style="margin: 0 0 12px 0; color: #1a1a1a;">Summary</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
+                    <div><strong>Total Rows:</strong> ${validationSummary.totalRows}</div>
+                    <div><strong>Valid Rows:</strong> ${validationSummary.validRows}</div>
+                    <div style="color: #dc3545;"><strong>Invalid Rows:</strong> ${validationSummary.invalidRows}</div>
+                    <div style="color: #dc3545;"><strong>Errors:</strong> ${validationSummary.issuesBySeverity.error}</div>
+                    <div style="color: #ffc107;"><strong>Warnings:</strong> ${validationSummary.issuesBySeverity.warning}</div>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="margin-bottom: 20px;">
+                <button id="autoFixBtn" class="auto-fix-btn" style="background: #28a745; color: white; border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer; margin-right: 8px;">
+                    🔧 Try Auto-Fix
+                </button>
+                <button id="exportInvalidBtn" class="export-invalid-btn" style="background: #6c757d; color: white; border: none; padding: 10px 16px; border-radius: 4px; cursor: pointer;">
+                    📄 Export Invalid Rows
+                </button>
+            </div>
+
+            <div class="invalid-rows-list">
+                <h3 style="margin: 0 0 16px 0; color: #1a1a1a;">Invalid Rows Details</h3>
+                <div class="rows-container" style="max-height: 400px; overflow-y: auto;">
+                    ${this.generateInvalidRowsHTML(invalidRows)}
+                </div>
+            </div>
+        `;
+
+        modal.appendChild(modalContent);
+
+        // Add event listeners
+        modalContent.querySelector('.close-modal').addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
+
+        modalContent.querySelector('#autoFixBtn').addEventListener('click', () => {
+            this.handleAutoFix(modal);
+        });
+
+        modalContent.querySelector('#exportInvalidBtn').addEventListener('click', () => {
+            this.exportInvalidRows(invalidRows);
+        });
+
+        // Close on background click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                document.body.removeChild(modal);
+            }
+        });
+
+        return modal;
+    }
+
+    /**
+     * Generate HTML for invalid rows display
+     * @param {Array} invalidRows - Array of invalid row objects
+     * @returns {string} HTML string
+     */
+    generateInvalidRowsHTML(invalidRows) {
+        return invalidRows.map(invalidRow => {
+            const issuesHTML = invalidRow.issues.map(issue => {
+                const severityColor = issue.severity === 'error' ? '#dc3545' : '#ffc107';
+                const suggestionHTML = issue.suggestion ? 
+                    `<div style="font-size: 0.8em; color: #666; margin-top: 4px;">💡 ${issue.suggestion}</div>` : '';
+                
+                return `
+                    <div style="margin-bottom: 8px; padding: 8px; background: ${issue.severity === 'error' ? '#f8d7da' : '#fff3cd'}; border-radius: 4px;">
+                        <div style="font-weight: 600; color: ${severityColor};">
+                            ${issue.field}: ${issue.issue}
+                        </div>
+                        <div style="font-size: 0.9em; color: #666;">
+                            Value: "${issue.value || '(empty)'}"
+                        </div>
+                        ${suggestionHTML}
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div style="border: 1px solid #e5e5e5; border-radius: 6px; padding: 16px; margin-bottom: 16px; background: white;">
+                    <div style="font-weight: 600; color: #1a1a1a; margin-bottom: 12px;">
+                        Row ${invalidRow.rowIndex} - ${invalidRow.issues.length} issue(s)
+                    </div>
+                    ${issuesHTML}
+                </div>
+            `;
+        }).join('');
+    }
+
+    /**
+     * Handle auto-fix attempt
+     * @param {HTMLElement} modal - Modal element
+     */
+    async handleAutoFix(modal) {
+        const autoFixBtn = modal.querySelector('#autoFixBtn');
+        const originalText = autoFixBtn.textContent;
+        
+        autoFixBtn.textContent = '🔧 Fixing...';
+        autoFixBtn.disabled = true;
+
+        try {
+            const fixResults = this.dataService.attemptAutoFix();
+            
+            if (fixResults.fixedCount > 0) {
+                // Apply the fixes
+                this.dataService.applyFixes(fixResults.fixedRows);
+                
+                // Update file display
+                this.updateFileDisplay(this.currentFile, {
+                    totalRows: fixResults.totalAttempted + this.dataService.reservations.length,
+                    validRows: this.dataService.reservations.length,
+                    invalidRows: fixResults.stillInvalidRows
+                });
+
+                // Show success message
+                alert(`Successfully fixed ${fixResults.fixedCount} out of ${fixResults.totalAttempted} invalid rows!`);
+                
+                // Close modal and refresh if all fixed
+                if (fixResults.stillInvalidCount === 0) {
+                    document.body.removeChild(modal);
+                } else {
+                    // Refresh modal with remaining invalid rows
+                    const newModal = this.createInvalidRowsModal(
+                        fixResults.stillInvalidRows, 
+                        this.dataService.getValidationSummary()
+                    );
+                    document.body.replaceChild(newModal, modal);
+                    newModal.style.display = 'flex';
+                }
+            } else {
+                alert('No rows could be automatically fixed. Manual review required.');
+            }
+        } catch (error) {
+            console.error('Auto-fix failed:', error);
+            alert('Auto-fix failed. Please try manual review.');
+        }
+
+        autoFixBtn.textContent = originalText;
+        autoFixBtn.disabled = false;
+    }
+
+    /**
+     * Export invalid rows to CSV for manual review
+     * @param {Array} invalidRows - Array of invalid row objects
+     */
+    exportInvalidRows(invalidRows) {
+        const csvData = [];
+        
+        // Add headers
+        csvData.push(['Row Number', 'Field', 'Issue', 'Current Value', 'Severity', 'Suggestion']);
+
+        // Add invalid row data
+        invalidRows.forEach(invalidRow => {
+            invalidRow.issues.forEach(issue => {
+                csvData.push([
+                    invalidRow.rowIndex,
+                    issue.field,
+                    issue.issue,
+                    issue.value || '(empty)',
+                    issue.severity,
+                    issue.suggestion || ''
+                ]);
+            });
+        });
+
+        // Convert to CSV string
+        const csvString = csvData.map(row => 
+            row.map(field => `"${field}"`).join(',')
+        ).join('\n');
+
+        // Download file
+        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'invalid_rows_analysis.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     }
 
     /**

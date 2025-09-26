@@ -1177,4 +1177,57 @@ tr:nth-child(even) {
     .file-details span {
         display: inline-block;
     }
+}/
+* Invalid Rows Modal Styles */
+.invalid-rows-modal {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.invalid-rows-modal .modal-header h2 {
+    font-size: 1.5em;
+    font-weight: 600;
+}
+
+.invalid-rows-modal .validation-summary {
+    font-size: 0.9em;
+}
+
+.invalid-rows-modal .auto-fix-btn:hover {
+    background: #218838 !important;
+}
+
+.invalid-rows-modal .export-invalid-btn:hover {
+    background: #5a6268 !important;
+}
+
+.invalid-rows-modal .close-modal:hover {
+    color: #333 !important;
+}
+
+.invalid-rows-link:hover {
+    color: #a71e2a !important;
+}
+
+/* Responsive modal */
+@media (max-width: 768px) {
+    .invalid-rows-modal .modal-content {
+        max-width: 95vw !important;
+        padding: 16px !important;
+    }
+    
+    .invalid-rows-modal .validation-summary {
+        grid-template-columns: 1fr 1fr !important;
+    }
+    
+    .invalid-rows-modal .modal-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .invalid-rows-modal .auto-fix-btn,
+    .invalid-rows-modal .export-invalid-btn {
+        width: 100%;
+        margin-right: 0 !important;
+    }
 }

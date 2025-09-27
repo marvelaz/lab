@@ -236,13 +236,39 @@ class DataService {
      * @returns {Reservation[]} Filtered reservations for stats
      */
     getReservationsForStats(monthsBack = CONFIG.STATS.MONTHS_BACK) {
+        // Handle special case for "all time"
+        if (monthsBack === 0) {
+            const allTimeFiltered = this.reservations.filter(reservation => 
+                !reservation.hasStatus(CONFIG.STATUS.CANCELLED)
+            );
+            console.log('All time stats - excluding only cancelled:', allTimeFiltered.length);
+            return allTimeFiltered;
+        }
+
         const cutoffDate = new Date();
         cutoffDate.setMonth(cutoffDate.getMonth() - monthsBack);
 
-        return this.reservations.filter(reservation => 
+        console.log('Stats filtering debug:', {
+            monthsBack,
+            cutoffDate: cutoffDate.toISOString(),
+            totalReservations: this.reservations.length,
+            sampleStartDates: this.reservations.slice(0, 5).map(r => ({
+                id: r.id,
+                startDate: r.startDate.toISOString(),
+                status: r.status,
+                isAfterCutoff: r.startDate >= cutoffDate,
+                isCancelled: r.hasStatus(CONFIG.STATUS.CANCELLED)
+            }))
+        });
+
+        const filtered = this.reservations.filter(reservation => 
             reservation.startDate >= cutoffDate && 
             !reservation.hasStatus(CONFIG.STATUS.CANCELLED)
         );
+
+        console.log('Filtered reservations count:', filtered.length);
+        
+        return filtered;
     }
 
     /**

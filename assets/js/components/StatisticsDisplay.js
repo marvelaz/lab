@@ -36,6 +36,13 @@ class StatisticsDisplay {
                 this.handleRefreshStats();
             });
         }
+
+        const debugStatsBtn = document.getElementById('debugStatsBtn');
+        if (debugStatsBtn) {
+            debugStatsBtn.addEventListener('click', () => {
+                this.handleDebugStats();
+            });
+        }
     }
 
     /**
@@ -61,6 +68,15 @@ class StatisticsDisplay {
         const event = new CustomEvent('statisticsRefreshRequested', {
             detail: { monthsBack: selectedMonths }
         });
+        document.dispatchEvent(event);
+    }
+
+    /**
+     * Handle debug statistics button click
+     */
+    handleDebugStats() {
+        // Dispatch event to trigger debug information
+        const event = new CustomEvent('statisticsDebugRequested');
         document.dispatchEvent(event);
     }
 

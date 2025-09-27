@@ -69,6 +69,10 @@ class LabEquipmentApp {
             this.handleStatisticsRefreshRequested(event.detail.monthsBack);
         });
 
+        document.addEventListener('statisticsDebugRequested', () => {
+            this.handleStatisticsDebugRequested();
+        });
+
         // Error handling
         window.addEventListener('error', (event) => {
             Utils.logError('Global', event.error);
@@ -188,7 +192,10 @@ class LabEquipmentApp {
      */
     handlePageChanged(pageId) {
         if (pageId === 'statistics' && this.dataService.isDataProcessed()) {
-            this.loadStatistics();
+            // Get the selected timeframe from the dropdown
+            const timeframeSelect = document.getElementById('timeframeSelect');
+            const selectedMonths = timeframeSelect ? parseInt(timeframeSelect.value) : CONFIG.STATS.MONTHS_BACK;
+            this.loadStatistics(selectedMonths);
         } else if (pageId === 'power' && this.dataService.isDataProcessed()) {
             this.loadPowerStatistics();
         }
@@ -200,7 +207,9 @@ class LabEquipmentApp {
      */
     async loadStatistics(monthsBack = null) {
         try {
-            const statsData = this.dataService.getReservationsForStats(monthsBack);
+            // Use default if monthsBack is null or undefined
+            const effectiveMonthsBack = monthsBack !== null ? monthsBack : CONFIG.STATS.MONTHS_BACK;
+            const statsData = this.dataService.getReservationsForStats(effectiveMonthsBack);
             
             if (statsData.length === 0) {
                 this.statisticsDisplay.showNoDataMessage();
@@ -211,7 +220,7 @@ class LabEquipmentApp {
             const statistics = this.statisticsService.generateStatistics(statsData);
             
             // Get timeframe information
-            const timeframeInfo = this.getTimeframeInfo(monthsBack, statsData);
+            const timeframeInfo = this.getTimeframeInfo(effectiveMonthsBack, statsData);
             
             // Display statistics
             this.statisticsDisplay.displayStatistics(statistics, timeframeInfo);
@@ -245,6 +254,59 @@ class LabEquipmentApp {
     }
 
     /**
+     * Handle statistics debug request
+     */
+    handleStatisticsDebugRequested() {
+        if (!this.dataService.isDataProcessed()) {
+            alert('No data loaded');
+            return;
+        }
+
+        const allReservations = this.dataService.getAllReservations();
+        const timeframeSelect = document.getElementById('timeframeSelect');
+        const selectedMonths = timeframeSelect ? parseInt(timeframeSelect.value) : 6;
+        
+        // Get stats data with current timeframe
+        const statsData = this.dataService.getReservationsForStats(selectedMonths);
+        
+        // Get all time data for comparison
+        const allTimeData = this.dataService.getReservationsForStats(0);
+        
+        const debugInfo = {
+            totalReservations: allReservations.length,
+            selectedTimeframe: selectedMonths,
+            statsDataCount: statsData.length,
+            allTimeDataCount: allTimeData.length,
+            cancelledCount: allReservations.filter(r => r.hasStatus(CONFIG.STATUS.CANCELLED)).length,
+            statusBreakdown: {
+                new: allReservations.filter(r => r.hasStatus(CONFIG.STATUS.NEW)).length,
+                acknowledged: allReservations.filter(r => r.hasStatus(CONFIG.STATUS.ACKNOWLEDGED)).length,
+                resolved: allReservations.filter(r => r.hasStatus(CONFIG.STATUS.RESOLVED)).length,
+                cancelled: allReservations.filter(r => r.hasStatus(CONFIG.STATUS.CANCELLED)).length
+            },
+            sampleDates: allReservations.slice(0, 10).map(r => ({
+                id: r.id,
+                startDate: r.startDate.toISOString().split('T')[0],
+                status: r.status
+            }))
+        };
+        
+        console.log('Statistics Debug Info:', debugInfo);
+        alert(`Debug Info (check console for details):
+Total Reservations: ${debugInfo.totalReservations}
+Selected Timeframe: ${selectedMonths} months
+Filtered Count: ${debugInfo.statsDataCount}
+All Time Count: ${debugInfo.allTimeDataCount}
+Cancelled: ${debugInfo.cancelledCount}
+
+Status Breakdown:
+- New: ${debugInfo.statusBreakdown.new}
+- Acknowledged: ${debugInfo.statusBreakdown.acknowledged}  
+- Resolved: ${debugInfo.statusBreakdown.resolved}
+- Cancelled: ${debugInfo.statusBreakdown.cancelled}`);
+    }
+
+    /**
      * Get timeframe information for display
      * @param {number} monthsBack - Number of months back
      * @param {Array} statsData - Filtered statistics data
@@ -253,6 +315,13 @@ class LabEquipmentApp {
     getTimeframeInfo(monthsBack, statsData) {
         const allReservations = this.dataService.getAllReservations();
         const cancelledCount = allReservations.filter(r => r.hasStatus(CONFIG.STATUS.CANCELLED)).length;
+        
+        console.log('Timeframe info debug:', {
+            monthsBack,
+            allReservationsCount: allReservations.length,
+            statsDataCount: statsData.length,
+            cancelledCount
+        });
         
         // Calculate date range from stats data
         let dateRange = null;

@@ -10,6 +10,18 @@ class Reservation {
         this.status = Utils.normalize(data[CONFIG.CSV_COLUMNS.STATUS]);
         this.suggestion = null; // For conflict resolution suggestions
         this.rawData = data; // Keep original data for reference
+        
+        // Debug logging for first few reservations
+        if (this.id && parseInt(this.id) <= 5) {
+            console.log(`Reservation ${this.id} debug:`, {
+                rawStartDate: data[CONFIG.CSV_COLUMNS.START_DATE],
+                rawEndDate: data[CONFIG.CSV_COLUMNS.END_DATE],
+                parsedStartDate: this.startDate.toISOString(),
+                parsedEndDate: this.endDate.toISOString(),
+                status: this.status,
+                isValid: this.isValid()
+            });
+        }
     }
 
     /**

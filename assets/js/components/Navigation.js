@@ -2,7 +2,7 @@
 class Navigation {
     constructor() {
         this.currentPage = 'validation';
-        this.pages = ['validation', 'statistics'];
+        this.pages = ['validation', 'statistics', 'power', 'help'];
         this.navTabs = null;
         this.pageElements = null;
     }
@@ -38,6 +38,17 @@ class Navigation {
                 this.navigateToPage('validation');
             });
         }
+
+        // Handle "Go to Power Validation" button in power page
+        const goToPowerValidationBtn = document.getElementById('goToPowerValidationBtn');
+        if (goToPowerValidationBtn) {
+            goToPowerValidationBtn.addEventListener('click', () => {
+                this.navigateToPage('validation');
+            });
+        }
+
+        // Handle help page table of contents links
+        this.setupHelpPageNavigation();
 
         // Handle browser back/forward buttons
         window.addEventListener('popstate', (e) => {
@@ -230,6 +241,33 @@ class Navigation {
                 disabled: tab.hasAttribute('disabled')
             }))
         };
+    }
+
+    /**
+     * Setup help page table of contents navigation
+     */
+    setupHelpPageNavigation() {
+        // Add smooth scrolling for help page anchor links
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('toc-link')) {
+                e.preventDefault();
+                const targetId = e.target.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                
+                if (targetElement && this.currentPage === 'help') {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    
+                    // Add highlight effect
+                    targetElement.style.backgroundColor = '#e3f2fd';
+                    setTimeout(() => {
+                        targetElement.style.backgroundColor = '';
+                    }, 2000);
+                }
+            }
+        });
     }
 
     /**

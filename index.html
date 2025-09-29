@@ -15,6 +15,7 @@
                 <button class="nav-tab active" data-page="validation">Conflict Validation</button>
                 <button class="nav-tab" data-page="statistics">Usage Statistics</button>
                 <button class="nav-tab" data-page="power">Power Usage</button>
+                <button class="nav-tab" data-page="help">📖 Help</button>
             </div>
         </div>
 
@@ -207,6 +208,288 @@
                     <h3>No Power Data Available</h3>
                     <p>Please upload and validate reservations data first to view power usage analytics.</p>
                     <button id="goToPowerValidationBtn" class="upload-btn">Go to Validation Page</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Page -->
+        <div id="help" class="page">
+            <div class="page-content">
+                <div class="header">
+                    <h1>📖 Lab Equipment Management System - Help Guide</h1>
+                    <p>Complete guide to understanding and using the statistics and analytics features</p>
+                </div>
+
+                <div class="help-content">
+                    <!-- Table of Contents -->
+                    <div class="help-section">
+                        <h2>📋 Table of Contents</h2>
+                        <div class="toc">
+                            <a href="#getting-started" class="toc-link">🚀 Getting Started</a>
+                            <a href="#device-statistics" class="toc-link">📱 Device Statistics</a>
+                            <a href="#user-statistics" class="toc-link">👥 User Statistics</a>
+                            <a href="#booking-patterns" class="toc-link">📊 User Booking Patterns</a>
+                            <a href="#power-analytics" class="toc-link">⚡ Power Analytics</a>
+                            <a href="#timeframes" class="toc-link">📅 Timeframe Controls</a>
+                            <a href="#troubleshooting" class="toc-link">🔧 Troubleshooting</a>
+                        </div>
+                    </div>
+
+                    <!-- Getting Started -->
+                    <div class="help-section" id="getting-started">
+                        <h2>🚀 Getting Started</h2>
+                        <div class="help-card">
+                            <h3>Step 1: Upload Your Data</h3>
+                            <p>Navigate to the <strong>Conflict Validation</strong> tab and upload your reservations CSV file. The system accepts files with these columns:</p>
+                            <ul>
+                                <li><strong>ID</strong> - Unique reservation identifier</li>
+                                <li><strong>Device</strong> - Equipment name</li>
+                                <li><strong>Lab Region</strong> - Laboratory location</li>
+                                <li><strong>Start Date</strong> - Reservation start (YYYY-MM-DD format)</li>
+                                <li><strong>End Date</strong> - Reservation end (YYYY-MM-DD format)</li>
+                                <li><strong>Requested by</strong> - User name</li>
+                                <li><strong>Status</strong> - new, acknowledged, resolved, or cancelled</li>
+                            </ul>
+                            <div class="help-tip">
+                                💡 <strong>Tip:</strong> Same-day reservations (start date = end date) are valid and count as 1-day bookings.
+                            </div>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>Step 2: Validate Your Data</h3>
+                            <p>Click <strong>"Validate Reservations"</strong> to process your data. The system will:</p>
+                            <ul>
+                                <li>Check for data quality issues</li>
+                                <li>Detect booking conflicts</li>
+                                <li>Show invalid rows with auto-fix suggestions</li>
+                                <li>Prepare data for analytics</li>
+                            </ul>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>Step 3: Explore Analytics</h3>
+                            <p>Once validated, navigate to <strong>Usage Statistics</strong> or <strong>Power Usage</strong> tabs to explore your data insights.</p>
+                        </div>
+                    </div>
+
+                    <!-- Device Statistics -->
+                    <div class="help-section" id="device-statistics">
+                        <h2>📱 Device Statistics</h2>
+                        
+                        <div class="help-card">
+                            <h3>Top Devices by Region</h3>
+                            <p>Shows the most popular equipment in each lab region, ranked by number of reservations.</p>
+                            <div class="metric-explanation">
+                                <strong>Metrics shown:</strong>
+                                <ul>
+                                    <li><strong>Reservations</strong> - Total number of bookings</li>
+                                    <li><strong>Total Days</strong> - Combined duration of all bookings</li>
+                                    <li><strong>Unique Users</strong> - Number of different people who used it</li>
+                                    <li><strong>Avg Duration</strong> - Average booking length</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>Equipment Utilization by Region</h3>
+                            <p>Shows how intensively equipment is being used as a percentage of available time.</p>
+                            <div class="help-formula">
+                                <strong>Calculation:</strong> (Total Reserved Days ÷ Available Days) × 100%
+                            </div>
+                            <div class="utilization-guide">
+                                <strong>Utilization Guidelines:</strong>
+                                <ul>
+                                    <li><span class="util-high">80-100%</span> - High demand, consider adding capacity</li>
+                                    <li><span class="util-medium">40-79%</span> - Good utilization</li>
+                                    <li><span class="util-low">0-39%</span> - Underutilized, investigate reasons</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>Least Reserved Devices</h3>
+                            <p>Identifies underutilized equipment that might need attention, training, or could be candidates for retirement.</p>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>Device Usage Trends</h3>
+                            <p>Shows reservation patterns over time for the most popular devices, helping identify seasonal trends or changing needs.</p>
+                        </div>
+                    </div>
+
+                    <!-- User Statistics -->
+                    <div class="help-section" id="user-statistics">
+                        <h2>👥 User Statistics</h2>
+                        
+                        <div class="help-card">
+                            <h3>Top Active Users</h3>
+                            <p>Ranks users by activity level using a comprehensive scoring system.</p>
+                            <div class="ranking-explanation">
+                                <strong>Ranking Score Components:</strong>
+                                <ul>
+                                    <li><strong>40%</strong> - Reservation frequency</li>
+                                    <li><strong>30%</strong> - Total usage time</li>
+                                    <li><strong>20%</strong> - Device diversity</li>
+                                    <li><strong>10%</strong> - Duration efficiency</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>User Activity by Region</h3>
+                            <p>Shows which users are most active in each lab region, helping identify regional champions and usage patterns.</p>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>User Device Diversity</h3>
+                            <p>Measures how varied each user's equipment choices are.</p>
+                            <div class="help-formula">
+                                <strong>Diversity Score:</strong> (Unique Devices Used ÷ Total Reservations) × 100%
+                            </div>
+                            <ul>
+                                <li><strong>High Diversity (70%+)</strong> - Uses many different devices</li>
+                                <li><strong>Medium Diversity (30-69%)</strong> - Balanced usage</li>
+                                <li><strong>Low Diversity (0-29%)</strong> - Specializes in few devices</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Booking Patterns -->
+                    <div class="help-section" id="booking-patterns">
+                        <h2>📊 User Booking Patterns</h2>
+                        
+                        <div class="help-card">
+                            <h3>How Booking Patterns Work</h3>
+                            <p>The system analyzes each user's reservation history and categorizes their bookings by duration:</p>
+                            <div class="duration-categories">
+                                <div class="duration-item">
+                                    <strong>Short-term:</strong> 1-3 days
+                                    <span class="duration-desc">Quick experiments, testing, brief usage</span>
+                                </div>
+                                <div class="duration-item">
+                                    <strong>Medium-term:</strong> 4-14 days
+                                    <span class="duration-desc">Standard projects, moderate experiments</span>
+                                </div>
+                                <div class="duration-item">
+                                    <strong>Long-term:</strong> 15+ days
+                                    <span class="duration-desc">Extended research, complex projects</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>User Pattern Categories</h3>
+                            
+                            <div class="pattern-category quick-user">
+                                <h4>🟢 Quick User</h4>
+                                <p><strong>Criteria:</strong> 70%+ of bookings are short-term (1-3 days)</p>
+                                <p><strong>Behavior:</strong> Efficient equipment usage, good lab citizenship</p>
+                                <p><strong>Typical Profile:</strong> Runs focused experiments, tests functionality, doesn't hog equipment</p>
+                            </div>
+
+                            <div class="pattern-category long-term-user">
+                                <h4>🔴 Long-term User</h4>
+                                <p><strong>Criteria:</strong> 50%+ of bookings are long-term (15+ days)</p>
+                                <p><strong>Behavior:</strong> Extended equipment usage, potential hoarding</p>
+                                <p><strong>Typical Profile:</strong> Complex projects, may need guidance on efficient usage</p>
+                            </div>
+
+                            <div class="pattern-category balanced-user">
+                                <h4>🟡 Balanced User</h4>
+                                <p><strong>Criteria:</strong> Mix of booking durations</p>
+                                <p><strong>Behavior:</strong> Adapts booking length to project needs</p>
+                                <p><strong>Typical Profile:</strong> Flexible usage patterns, various project types</p>
+                            </div>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>Using Pattern Data for Lab Management</h3>
+                            <div class="management-tips">
+                                <div class="tip-item">
+                                    <strong>Identify Equipment Hoarders:</strong> Long-term users might need coaching on efficient usage
+                                </div>
+                                <div class="tip-item">
+                                    <strong>Recognize Efficient Users:</strong> Quick users are good examples for training others
+                                </div>
+                                <div class="tip-item">
+                                    <strong>Resource Planning:</strong> Understand typical usage patterns for scheduling
+                                </div>
+                                <div class="tip-item">
+                                    <strong>Policy Development:</strong> Create fair usage rules based on actual behavior
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Power Analytics -->
+                    <div class="help-section" id="power-analytics">
+                        <h2>⚡ Power Analytics</h2>
+                        <div class="help-card">
+                            <h3>Power Usage Monitoring</h3>
+                            <p>Track energy consumption, costs, and efficiency across lab equipment to optimize resource usage and reduce environmental impact.</p>
+                            <div class="help-note">
+                                <strong>Note:</strong> Power analytics require additional configuration and integration with power monitoring systems.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeframes -->
+                    <div class="help-section" id="timeframes">
+                        <h2>📅 Timeframe Controls</h2>
+                        <div class="help-card">
+                            <h3>Selecting Analysis Periods</h3>
+                            <p>Use the timeframe dropdown to analyze different periods:</p>
+                            <ul>
+                                <li><strong>Last 1 month</strong> - Recent activity and trends</li>
+                                <li><strong>Last 3 months</strong> - Quarterly analysis</li>
+                                <li><strong>Last 6 months</strong> - Default, balanced view</li>
+                                <li><strong>Last 12 months</strong> - Annual patterns</li>
+                                <li><strong>Last 24 months</strong> - Long-term trends</li>
+                                <li><strong>All time</strong> - Complete historical data</li>
+                            </ul>
+                            <div class="help-tip">
+                                💡 <strong>Tip:</strong> Cancelled reservations are automatically excluded from all statistics.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Troubleshooting -->
+                    <div class="help-section" id="troubleshooting">
+                        <h2>🔧 Troubleshooting</h2>
+                        
+                        <div class="help-card">
+                            <h3>Common Issues</h3>
+                            
+                            <div class="troubleshoot-item">
+                                <h4>❌ "No statistics available"</h4>
+                                <p><strong>Cause:</strong> No data in selected timeframe or all reservations are cancelled</p>
+                                <p><strong>Solution:</strong> Try "All time" timeframe or check your data dates</p>
+                            </div>
+
+                            <div class="troubleshoot-item">
+                                <h4>❌ "Invalid rows detected"</h4>
+                                <p><strong>Cause:</strong> Data quality issues in your CSV</p>
+                                <p><strong>Solution:</strong> Click the invalid rows link to see issues and use auto-fix</p>
+                            </div>
+
+                            <div class="troubleshoot-item">
+                                <h4>❌ "Very few reservations in statistics"</h4>
+                                <p><strong>Cause:</strong> Most reservations are outside the selected timeframe</p>
+                                <p><strong>Solution:</strong> Use the Debug button to see date ranges and adjust timeframe</p>
+                            </div>
+                        </div>
+
+                        <div class="help-card">
+                            <h3>Debug Tools</h3>
+                            <p>Use the red <strong>🐛 Debug</strong> button in statistics to get detailed information about:</p>
+                            <ul>
+                                <li>Total reservations loaded</li>
+                                <li>Current timeframe filtering</li>
+                                <li>Status breakdown</li>
+                                <li>Sample dates from your data</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

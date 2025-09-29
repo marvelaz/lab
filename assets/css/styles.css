@@ -1508,4 +1508,272 @@ tistics Elements */
         padding: 6px 10px;
         font-size: 0.85em;
     }
+}/* Hel
+p Page Styles */
+.help-content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.help-section {
+    margin-bottom: 40px;
+}
+
+.help-section h2 {
+    color: #1a1a1a;
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e5e5e5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.help-card {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.help-card h3 {
+    color: #1a1a1a;
+    font-size: 1.2em;
+    margin: 0 0 16px 0;
+    font-weight: 600;
+}
+
+.help-card h4 {
+    color: #333;
+    font-size: 1.1em;
+    margin: 16px 0 12px 0;
+    font-weight: 600;
+}
+
+.help-card p {
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.help-card ul {
+    color: #555;
+    line-height: 1.6;
+    margin: 12px 0;
+    padding-left: 20px;
+}
+
+.help-card li {
+    margin-bottom: 8px;
+}
+
+/* Table of Contents */
+.toc {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.toc-link {
+    display: block;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.toc-link:hover {
+    background: #e9ecef;
+    border-color: #333;
+    color: #1a1a1a;
+}
+
+/* Special Elements */
+.help-tip {
+    background: #e3f2fd;
+    border-left: 4px solid #2196f3;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 4px 4px 0;
+    font-size: 0.9em;
+}
+
+.help-note {
+    background: #fff3e0;
+    border-left: 4px solid #ff9800;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 4px 4px 0;
+    font-size: 0.9em;
+}
+
+.help-formula {
+    background: #f3e5f5;
+    border-left: 4px solid #9c27b0;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 4px 4px 0;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+}
+
+/* Metric Explanations */
+.metric-explanation {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 6px;
+    margin: 16px 0;
+}
+
+.ranking-explanation {
+    background: #f0f8ff;
+    padding: 16px;
+    border-radius: 6px;
+    margin: 16px 0;
+}
+
+/* Utilization Guide */
+.utilization-guide {
+    margin: 16px 0;
+}
+
+.util-high {
+    background: #dc3545;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.util-medium {
+    background: #ffc107;
+    color: #333;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.util-low {
+    background: #28a745;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+/* Duration Categories */
+.duration-categories {
+    margin: 16px 0;
+}
+
+.duration-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+
+.duration-desc {
+    color: #666;
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+/* Pattern Categories */
+.pattern-category {
+    padding: 16px;
+    border-radius: 8px;
+    margin: 16px 0;
+    border-left: 4px solid;
+}
+
+.quick-user {
+    background: #e8f5e8;
+    border-left-color: #28a745;
+}
+
+.long-term-user {
+    background: #fdeaea;
+    border-left-color: #dc3545;
+}
+
+.balanced-user {
+    background: #fff8e1;
+    border-left-color: #ffc107;
+}
+
+.pattern-category h4 {
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Management Tips */
+.management-tips {
+    display: grid;
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.tip-item {
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-left: 3px solid #333;
+    border-radius: 0 4px 4px 0;
+}
+
+/* Troubleshooting */
+.troubleshoot-item {
+    margin: 20px 0;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #dc3545;
+}
+
+.troubleshoot-item h4 {
+    color: #dc3545;
+    margin-top: 0;
+}
+
+/* Responsive Help Page */
+@media (max-width: 768px) {
+    .help-content {
+        padding: 0 16px;
+    }
+    
+    .help-card {
+        padding: 16px;
+    }
+    
+    .toc {
+        grid-template-columns: 1fr;
+    }
+    
+    .duration-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .help-section h2 {
+        font-size: 1.3em;
+    }
+    
+    .help-card h3 {
+        font-size: 1.1em;
+    }
 }

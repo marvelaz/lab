@@ -21,7 +21,11 @@ class StatisticsService {
             topUsers: this.getTopUsers(reservations),
             utilizationRates: this.getUtilizationRates(reservations),
             leastReservedDevices: this.getLeastReservedDevices(reservations),
-            summary: this.getStatisticsSummary(reservations)
+            summary: this.getStatisticsSummary(reservations),
+            userActivityByRegion: this.getUserActivityByRegion(reservations),
+            userDeviceDiversity: this.getUserDeviceDiversity(reservations),
+            userBookingPatterns: this.getUserBookingPatterns(reservations),
+            deviceTrends: this.getDeviceTrends(reservations)
         };
 
         this.cache.set(cacheKey, statistics);
@@ -356,6 +360,152 @@ class StatisticsService {
      */
     clearCache() {
         this.cache.clear();
+    }
+
+    /**
+     * Get user activity by region
+     * @param {Reservation[]} reservations - Reservations to analyze
+     * @returns {Object} User activity by region
+     */
+    getUserActivityByRegion(reservations) {
+        const regionStats = {};
+
+        reservations.forEach(reservation => {
+            const region = reservation.labRegion;
+            const user = reservation.requestedBy;
+
+            if (!regionStats[region]) {
+                regionStats[region] = {};
+            }
+
+            if (!regionStats[region][user]) {
+                regionStats[region][user] = {
+                    reservationCount: 0,
+                    totalDays: 0,
+                    devices: new Set()
+                };
+            }
+
+            regionStats[region][user].reservationCount++;
+            regionStats[region][user].totalDays += reservation.getDurationInDays();
+            regionStats[region][user].devices.add(reservation.device);
+        });
+
+        // Convert to sorted arrays
+        const result = {};
+        Object.keys(regionStats).forEach(region => {
+            result[region] = Object.entries(regionStats[region])
+                .map(([user, stats]) => ({
+                    user,
+                    reservationCount: stats.reservationCount,
+                    totalDays: stats.totalDays,
+                    uniqueDevices: stats.devices.size,
+                    avgDuration: Math.round(stats.totalDays / stats.reservationCount * 10) / 10
+                }))
+                .sort((a, b) => b.reservationCount - a.reservationCount)
+                .slice(0, CONFIG.STATS.TOP_ITEMS_LIMIT);
+        });
+
+        return result;
+    }
+
+    /**
+     * Get user device diversity statistics
+     * @param {Reservation[]} reservations - Reservations to analyze
+     * @returns {Array} User device diversity data
+     */
+    getUserDeviceDiversity(reservations) {
+        const userStats = {};
+
+        reservations.forEach(reservation => {
+            const user = reservation.requestedBy;
+
+            if (!userStats[user]) {
+                userStats[user] = {
+                    devices: new Set(),
+                    reservationCount: 0,
+                    regions: new Set()
+                };
+            }
+
+            userStats[user].devices.add(reservation.device);
+            userStats[user].reservationCount++;
+            userStats[user].regions.add(reservation.labRegion);
+        });
+
+        return Object.entries(userStats)
+            .map(([user, stats]) => ({
+                user,
+                uniqueDevices: stats.devices.size,
+                uniqueRegions: stats.regions.size,
+                reservationCount: stats.reservationCount,
+                diversityScore: Math.round((stats.devices.size / stats.reservationCount) * 100)
+            }))
+            .sort((a, b) => b.diversityScore - a.diversityScore)
+            .slice(0, CONFIG.STATS.TOP_ITEMS_LIMIT);
+    }
+
+    /**
+     * Get user booking patterns
+     * @param {Reservation[]} reservations - Reservations to analyze
+     * @returns {Array} User booking patterns data
+     */
+    getUserBookingPatterns(reservations) {
+        const userPatterns = {};
+
+        reservations.forEach(reservation => {
+            const user = reservation.requestedBy;
+            const duration = reservation.getDurationInDays();
+
+            if (!userPatterns[user]) {
+                userPatterns[user] = {
+                    shortTerm: 0, // 1-3 days
+                    mediumTerm: 0, // 4-14 days
+                    longTerm: 0, // 15+ days
+                    totalReservations: 0,
+                    totalDays: 0
+                };
+            }
+
+            userPatterns[user].totalReservations++;
+            userPatterns[user].totalDays += duration;
+
+            if (duration <= 3) {
+                userPatterns[user].shortTerm++;
+            } else if (duration <= 14) {
+                userPatterns[user].mediumTerm++;
+            } else {
+                userPatterns[user].longTerm++;
+            }
+        });
+
+        return Object.entries(userPatterns)
+            .map(([user, pattern]) => ({
+                user,
+                totalReservations: pattern.totalReservations,
+                avgDuration: Math.round(pattern.totalDays / pattern.totalReservations * 10) / 10,
+                shortTermPercent: Math.round((pattern.shortTerm / pattern.totalReservations) * 100),
+                mediumTermPercent: Math.round((pattern.mediumTerm / pattern.totalReservations) * 100),
+                longTermPercent: Math.round((pattern.longTerm / pattern.totalReservations) * 100),
+                pattern: this.determineBookingPattern(pattern)
+            }))
+            .sort((a, b) => b.totalReservations - a.totalReservations)
+            .slice(0, CONFIG.STATS.TOP_ITEMS_LIMIT);
+    }
+
+    /**
+     * Determine booking pattern type
+     * @param {Object} pattern - Pattern data
+     * @returns {string} Pattern type
+     */
+    determineBookingPattern(pattern) {
+        const total = pattern.totalReservations;
+        const shortPercent = (pattern.shortTerm / total) * 100;
+        const longPercent = (pattern.longTerm / total) * 100;
+
+        if (shortPercent >= 70) return 'Quick User';
+        if (longPercent >= 50) return 'Long-term User';
+        return 'Balanced User';
     }
 
     /**

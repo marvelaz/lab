@@ -81,27 +81,67 @@
                 </div>
 
                 <div id="statsContent" style="display: none;">
-                    <div class="stats-grid">
-                        <div class="stats-section">
-                            <h3 class="stats-title">Top Devices by Region</h3>
-                            <div id="topDevicesChart"></div>
+                    <!-- Statistics Category Tabs -->
+                    <div class="stats-category-tabs">
+                        <button class="stats-category-tab active" data-category="devices">
+                            📱 Device Statistics
+                        </button>
+                        <button class="stats-category-tab" data-category="users">
+                            👥 User Statistics
+                        </button>
+                    </div>
+
+                    <!-- Device Statistics Section -->
+                    <div id="deviceStatsSection" class="stats-category-section active">
+                        <div class="stats-grid">
+                            <div class="stats-section">
+                                <h3 class="stats-title">Top Devices by Region</h3>
+                                <div id="topDevicesChart"></div>
+                            </div>
+
+                            <div class="stats-section">
+                                <h3 class="stats-title">Equipment Utilization by Region</h3>
+                                <div id="utilizationTabs"></div>
+                            </div>
                         </div>
 
-                        <div class="stats-section">
-                            <h3 class="stats-title">Top Active Users</h3>
-                            <div id="topUsersTable"></div>
+                        <div class="stats-grid">
+                            <div class="stats-section">
+                                <h3 class="stats-title">Least Reserved Devices by Region</h3>
+                                <div id="leastReservedTabs"></div>
+                            </div>
+
+                            <div class="stats-section">
+                                <h3 class="stats-title">Device Usage Trends</h3>
+                                <div id="deviceTrendsChart"></div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="stats-grid">
-                        <div class="stats-section">
-                            <h3 class="stats-title">Equipment Utilization by Region</h3>
-                            <div id="utilizationTabs"></div>
+                    <!-- User Statistics Section -->
+                    <div id="userStatsSection" class="stats-category-section">
+                        <div class="stats-grid">
+                            <div class="stats-section">
+                                <h3 class="stats-title">Top Active Users</h3>
+                                <div id="topUsersTable"></div>
+                            </div>
+
+                            <div class="stats-section">
+                                <h3 class="stats-title">User Activity by Region</h3>
+                                <div id="userActivityByRegion"></div>
+                            </div>
                         </div>
 
-                        <div class="stats-section">
-                            <h3 class="stats-title">Least Reserved Devices by Region</h3>
-                            <div id="leastReservedTabs"></div>
+                        <div class="stats-grid">
+                            <div class="stats-section">
+                                <h3 class="stats-title">User Device Diversity</h3>
+                                <div id="userDeviceDiversity"></div>
+                            </div>
+
+                            <div class="stats-section">
+                                <h3 class="stats-title">User Booking Patterns</h3>
+                                <div id="userBookingPatterns"></div>
+                            </div>
                         </div>
                     </div>
                 </div>

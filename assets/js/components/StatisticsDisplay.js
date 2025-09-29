@@ -16,6 +16,10 @@ class StatisticsDisplay {
         this.refreshStatsBtn = document.getElementById('refreshStatsBtn');
         this.timeframeInfo = document.getElementById('statsTimeframeInfo');
         
+        // Category sections
+        this.deviceStatsSection = document.getElementById('deviceStatsSection');
+        this.userStatsSection = document.getElementById('userStatsSection');
+        
         this.setupEventListeners();
         
         console.log('StatisticsDisplay component initialized');
@@ -43,6 +47,14 @@ class StatisticsDisplay {
                 this.handleDebugStats();
             });
         }
+
+        // Category tab switching
+        const categoryTabs = document.querySelectorAll('.stats-category-tab');
+        categoryTabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                this.handleCategorySwitch(e.target.dataset.category);
+            });
+        });
     }
 
     /**
@@ -81,6 +93,28 @@ class StatisticsDisplay {
     }
 
     /**
+     * Handle category tab switching
+     * @param {string} category - Category to switch to ('devices' or 'users')
+     */
+    handleCategorySwitch(category) {
+        // Update tab states
+        document.querySelectorAll('.stats-category-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.category === category);
+        });
+
+        // Update section visibility
+        document.querySelectorAll('.stats-category-section').forEach(section => {
+            section.classList.remove('active');
+        });
+
+        if (category === 'devices') {
+            this.deviceStatsSection?.classList.add('active');
+        } else if (category === 'users') {
+            this.userStatsSection?.classList.add('active');
+        }
+    }
+
+    /**
      * Display statistics data
      * @param {Object} statistics - Statistics data object
      * @param {Object} timeframeInfo - Information about the timeframe used
@@ -95,16 +129,52 @@ class StatisticsDisplay {
             this.updateTimeframeInfo(timeframeInfo);
         }
         
-        // Display all sections using unified card system
-        this.displayTopDevicesCard(statistics.topDevices);
-        this.displayTopUsersCard(statistics.topUsers);
-        this.displayUtilizationCard(statistics.utilizationRates);
-        this.displayLeastReservedCard(statistics.leastReservedDevices);
-        
-        // Display summary information
+        // Display summary information first
         if (statistics.summary) {
             this.displaySummaryInfo(statistics.summary);
         }
+        
+        // Display device statistics
+        this.displayDeviceStatistics(statistics);
+        
+        // Display user statistics
+        this.displayUserStatistics(statistics);
+    }
+
+    /**
+     * Display device-related statistics
+     * @param {Object} statistics - Statistics data object
+     */
+    displayDeviceStatistics(statistics) {
+        // Top devices by region
+        this.displayTopDevicesCard(statistics.topDevices);
+        
+        // Equipment utilization
+        this.displayUtilizationCard(statistics.utilizationRates);
+        
+        // Least reserved devices
+        this.displayLeastReservedCard(statistics.leastReservedDevices);
+        
+        // Device trends (new)
+        this.displayDeviceTrends(statistics);
+    }
+
+    /**
+     * Display user-related statistics
+     * @param {Object} statistics - Statistics data object
+     */
+    displayUserStatistics(statistics) {
+        // Top active users
+        this.displayTopUsersCard(statistics.topUsers);
+        
+        // User activity by region (new)
+        this.displayUserActivityByRegion(statistics);
+        
+        // User device diversity (new)
+        this.displayUserDeviceDiversity(statistics);
+        
+        // User booking patterns (new)
+        this.displayUserBookingPatterns(statistics);
     }
 
     /**
@@ -621,6 +691,158 @@ class StatisticsDisplay {
         }
         
         this.showNoDataMessage();
+    }
+
+    /**
+     * Display device trends
+     * @param {Object} statistics - Statistics data object
+     */
+    displayDeviceTrends(statistics) {
+        const container = document.getElementById('deviceTrendsChart');
+        if (!container || !statistics.deviceTrends) return;
+
+        const monthlyData = statistics.deviceTrends;
+        const months = Object.keys(monthlyData).sort();
+        
+        if (months.length === 0) {
+            container.innerHTML = '<div class="no-data">No trend data available</div>';
+            return;
+        }
+
+        // Get top devices across all months
+        const allDevices = new Set();
+        months.forEach(month => {
+            Object.keys(monthlyData[month]).forEach(device => {
+                allDevices.add(device);
+            });
+        });
+
+        const topDevices = Array.from(allDevices).slice(0, 5); // Show top 5 devices
+
+        container.innerHTML = `
+            <div class="trends-summary">
+                <p>Showing reservation trends for top ${topDevices.length} devices over ${months.length} months</p>
+                <div class="device-trend-list">
+                    ${topDevices.map(device => `
+                        <div class="trend-item">
+                            <strong>${device}</strong>: 
+                            ${months.reduce((sum, month) => sum + (monthlyData[month][device] || 0), 0)} total reservations
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Display user activity by region
+     * @param {Object} statistics - Statistics data object
+     */
+    displayUserActivityByRegion(statistics) {
+        this.displayRegionalDataCard('userActivityByRegion', statistics.userActivityByRegion, {
+            title: 'User Activity by Region',
+            type: 'metric-list',
+            showMetrics: true,
+            showRanking: true
+        });
+    }
+
+    /**
+     * Display user device diversity
+     * @param {Object} statistics - Statistics data object
+     */
+    displayUserDeviceDiversity(statistics) {
+        const container = document.getElementById('userDeviceDiversity');
+        if (!container || !statistics.userDeviceDiversity) return;
+
+        const diversityData = statistics.userDeviceDiversity;
+        
+        if (diversityData.length === 0) {
+            container.innerHTML = '<div class="no-data">No diversity data available</div>';
+            return;
+        }
+
+        let html = '<div class="unified-stats-card"><div class="stats-list">';
+        
+        diversityData.forEach((user, index) => {
+            html += `
+                <div class="unified-data-item">
+                    <div class="item-rank">${index + 1}</div>
+                    <div class="item-content">
+                        <div class="item-name">${user.user}</div>
+                        <div class="item-metrics">
+                            <span class="metric">${user.uniqueDevices} devices</span>
+                            <span class="metric">${user.uniqueRegions} regions</span>
+                            <span class="metric">${user.reservationCount} reservations</span>
+                            <span class="metric diversity-score">${user.diversityScore}% diversity</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div></div>';
+        container.innerHTML = html;
+    }
+
+    /**
+     * Display user booking patterns
+     * @param {Object} statistics - Statistics data object
+     */
+    displayUserBookingPatterns(statistics) {
+        const container = document.getElementById('userBookingPatterns');
+        if (!container || !statistics.userBookingPatterns) return;
+
+        const patternsData = statistics.userBookingPatterns;
+        
+        if (patternsData.length === 0) {
+            container.innerHTML = '<div class="no-data">No pattern data available</div>';
+            return;
+        }
+
+        let html = '<div class="unified-stats-card"><div class="stats-list">';
+        
+        patternsData.forEach((user, index) => {
+            const patternColor = this.getPatternColor(user.pattern);
+            
+            html += `
+                <div class="unified-data-item">
+                    <div class="item-rank">${index + 1}</div>
+                    <div class="item-content">
+                        <div class="item-name">
+                            ${user.user}
+                            <span class="pattern-badge" style="background: ${patternColor}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75em; margin-left: 8px;">
+                                ${user.pattern}
+                            </span>
+                        </div>
+                        <div class="item-metrics">
+                            <span class="metric">${user.totalReservations} reservations</span>
+                            <span class="metric">${user.avgDuration} days avg</span>
+                            <span class="metric">Short: ${user.shortTermPercent}%</span>
+                            <span class="metric">Medium: ${user.mediumTermPercent}%</span>
+                            <span class="metric">Long: ${user.longTermPercent}%</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div></div>';
+        container.innerHTML = html;
+    }
+
+    /**
+     * Get color for booking pattern
+     * @param {string} pattern - Pattern type
+     * @returns {string} Color code
+     */
+    getPatternColor(pattern) {
+        switch (pattern) {
+            case 'Quick User': return '#28a745';
+            case 'Long-term User': return '#dc3545';
+            case 'Balanced User': return '#ffc107';
+            default: return '#6c757d';
+        }
     }
 
     /**

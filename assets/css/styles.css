@@ -1300,4 +1300,212 @@ Statistics Controls and Summary */
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 12px !important;
     }
+}/* St
+atistics Category Tabs */
+.stats-category-tabs {
+    display: flex;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #e5e5e5;
+    gap: 4px;
+}
+
+.stats-category-tab {
+    background: none;
+    border: none;
+    padding: 12px 24px;
+    font-size: 1em;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stats-category-tab:hover {
+    color: #333;
+    background: #f8f9fa;
+}
+
+.stats-category-tab.active {
+    color: #1a1a1a;
+    border-bottom-color: #333;
+    background: #f8f9fa;
+}
+
+.stats-category-section {
+    display: none;
+}
+
+.stats-category-section.active {
+    display: block;
+}
+
+/* Enhanced stats sections */
+.stats-section {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.stats-title {
+    margin: 0 0 16px 0;
+    color: #1a1a1a;
+    font-size: 1.1em;
+    font-weight: 600;
+    border-bottom: 1px solid #e5e5e5;
+    padding-bottom: 8px;
+}
+
+/* Responsive category tabs */
+@media (max-width: 768px) {
+    .stats-category-tabs {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .stats-category-tab {
+        text-align: center;
+        border-bottom: 1px solid #e5e5e5;
+        border-radius: 0;
+    }
+    
+    .stats-category-tab.active {
+        border-bottom-color: #333;
+        border-left: 3px solid #333;
+    }
+}/* New Sta
+tistics Elements */
+.trends-summary {
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    margin-bottom: 16px;
+}
+
+.device-trend-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.trend-item {
+    padding: 8px 12px;
+    background: white;
+    border-radius: 4px;
+    border-left: 3px solid #333;
+    font-size: 0.9em;
+}
+
+.diversity-score {
+    background: linear-gradient(135deg, #28a745, #20c997) !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+.pattern-badge {
+    display: inline-block;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.no-data {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    font-style: italic;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+/* Enhanced unified data items */
+.unified-data-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+.unified-data-item:hover {
+    background: #f8f9fa;
+}
+
+.unified-data-item:last-child {
+    border-bottom: none;
+}
+
+.item-rank {
+    background: #333;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 50%;
+    font-weight: 600;
+    font-size: 0.9em;
+    min-width: 32px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.item-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.item-name {
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.item-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.metric {
+    background: #e9ecef;
+    color: #495057;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Responsive adjustments for new elements */
+@media (max-width: 768px) {
+    .item-metrics {
+        gap: 4px;
+    }
+    
+    .metric {
+        font-size: 0.75em;
+        padding: 3px 6px;
+    }
+    
+    .pattern-badge {
+        font-size: 0.7em !important;
+        padding: 1px 6px !important;
+    }
+    
+    .device-trend-list {
+        gap: 6px;
+    }
+    
+    .trend-item {
+        padding: 6px 10px;
+        font-size: 0.85em;
+    }
 }

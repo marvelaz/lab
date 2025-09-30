@@ -166,9 +166,33 @@ class ConflictDisplay {
             const widthPercent = (duration / totalDays) * 100;
             const leftPercent = (startOffset / totalDays) * 100;
 
-            // Only show duration text if bar is wide enough (at least 15% of total width)
+            // Calculate overlap with honored reservation (first one)
+            let overlapDays = 0;
+            let displayText = '';
+            
+            if (!isHonored && sortedReservations[0]) {
+                const honoredReservation = sortedReservations[0];
+                overlapDays = this.calculateOverlapDays(reservation, honoredReservation);
+            }
+
+            // Determine what text to show based on bar width and conflict status
             const showDuration = widthPercent >= 15;
-            const durationText = showDuration ? `<span class="timeline-duration">${duration}d</span>` : '';
+            
+            if (isHonored) {
+                // Honored reservation shows duration
+                displayText = showDuration ? `<span class="timeline-duration">${duration}d</span>` : '';
+            } else {
+                // Conflicting reservation shows overlap cleverly
+                if (showDuration && overlapDays > 0) {
+                    displayText = `<span class="timeline-duration">${duration}d <span class="overlap-indicator">⚠${overlapDays}</span></span>`;
+                } else if (showDuration) {
+                    displayText = `<span class="timeline-duration">${duration}d</span>`;
+                }
+            }
+
+            const tooltipText = isHonored ? 
+                `${reservation.getFormattedStartDate()} to ${reservation.getFormattedEndDate()} (${duration} day${duration > 1 ? 's' : ''})` :
+                `${reservation.getFormattedStartDate()} to ${reservation.getFormattedEndDate()} (${duration} day${duration > 1 ? 's' : ''}) - ${overlapDays} day${overlapDays > 1 ? 's' : ''} overlap`;
 
             html += `
                 <div class="timeline-row">
@@ -176,8 +200,8 @@ class ConflictDisplay {
                     <div class="timeline-track">
                         <div class="timeline-bar ${isHonored ? 'honored' : 'conflicting'}" 
                              style="left: ${leftPercent}%; width: ${widthPercent}%;"
-                             title="${reservation.getFormattedStartDate()} to ${reservation.getFormattedEndDate()} (${duration} day${duration > 1 ? 's' : ''})">
-                            ${durationText}
+                             title="${tooltipText}">
+                            ${displayText}
                         </div>
                     </div>
                 </div>
@@ -190,6 +214,32 @@ class ConflictDisplay {
         `;
 
         return html;
+    }
+
+    /**
+     * Calculate overlapping days between two reservations
+     * @param {Reservation} reservation1 - First reservation
+     * @param {Reservation} reservation2 - Second reservation
+     * @returns {number} Number of overlapping days
+     */
+    calculateOverlapDays(reservation1, reservation2) {
+        const start1 = reservation1.startDate;
+        const end1 = reservation1.endDate;
+        const start2 = reservation2.startDate;
+        const end2 = reservation2.endDate;
+
+        // Find the overlap period
+        const overlapStart = new Date(Math.max(start1.getTime(), start2.getTime()));
+        const overlapEnd = new Date(Math.min(end1.getTime(), end2.getTime()));
+
+        // If there's no overlap, return 0
+        if (overlapStart > overlapEnd) {
+            return 0;
+        }
+
+        // Calculate overlap in days (inclusive)
+        const overlapDays = Math.ceil((overlapEnd - overlapStart) / (1000 * 60 * 60 * 24)) + 1;
+        return Math.max(0, overlapDays);
     }
 
     /**

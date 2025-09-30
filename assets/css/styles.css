@@ -2157,6 +2157,26 @@ tr:nth-child(even) {
     background: none;
     border: none;
     padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.overlap-indicator {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    padding: 1px 4px;
+    font-size: 0.9em;
+    font-weight: 700;
+    color: #ffeb3b;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    animation: pulse-warning 2s infinite;
+}
+
+@keyframes pulse-warning {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }
 
 /* Responsive minimalistic timeline */
@@ -2172,5 +2192,10 @@ tr:nth-child(even) {
 
     .timeline-duration {
         font-size: 0.65em;
+    }
+    
+    .overlap-indicator {
+        font-size: 0.8em;
+        padding: 1px 3px;
     }
 }

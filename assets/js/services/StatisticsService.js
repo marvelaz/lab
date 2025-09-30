@@ -194,7 +194,19 @@ class StatisticsService {
      */
     getUtilizationRates(reservations) {
         const regionStats = {};
-        const totalDays = CONFIG.STATS.UTILIZATION_DAYS;
+        
+        // Calculate actual timeframe from the data
+        let actualTimeframeDays = CONFIG.STATS.UTILIZATION_DAYS; // fallback
+        
+        if (reservations.length > 0) {
+            const dates = reservations.map(r => r.startDate).sort((a, b) => a - b);
+            const earliestDate = dates[0];
+            const latestDate = dates[dates.length - 1];
+            actualTimeframeDays = Math.ceil((latestDate - earliestDate) / (1000 * 60 * 60 * 24)) + 1;
+            
+            // Ensure minimum reasonable timeframe
+            actualTimeframeDays = Math.max(actualTimeframeDays, 30);
+        }
 
         // Group by region and device
         reservations.forEach(reservation => {
@@ -216,7 +228,7 @@ class StatisticsService {
             regionStats[region][device].reservationCount++;
         });
 
-        // Calculate utilization percentages
+        // Calculate utilization percentages using actual timeframe
         const result = {};
         Object.keys(regionStats).forEach(region => {
             result[region] = Object.entries(regionStats[region])
@@ -224,7 +236,8 @@ class StatisticsService {
                     device,
                     reservedDays: stats.reservedDays,
                     reservationCount: stats.reservationCount,
-                    utilizationRate: Math.round((stats.reservedDays / totalDays) * 100 * 10) / 10
+                    utilizationRate: Math.round((stats.reservedDays / actualTimeframeDays) * 100 * 10) / 10,
+                    timeframeDays: actualTimeframeDays // for debugging
                 }))
                 .sort((a, b) => b.utilizationRate - a.utilizationRate);
         });

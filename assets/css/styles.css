@@ -2134,28 +2134,29 @@ tr:nth-child(even) {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent !important;
-    border: none !important;
 }
 
 .timeline-bar.honored {
-    /* No background - transparent */
+    background: #28a745;
 }
 
 .timeline-bar.conflicting {
-    /* No background - transparent */
+    background: #dc3545;
 }
 
 .timeline-bar:hover {
-    opacity: 1;
+    opacity: 0.8;
 }
 
 .timeline-duration {
-    color: #333;
+    color: white;
     font-size: 0.7em;
     font-weight: 600;
-    text-shadow: none;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
     white-space: nowrap;
+    background: none;
+    border: none;
+    padding: 0;
 }
 
 /* Responsive minimalistic timeline */

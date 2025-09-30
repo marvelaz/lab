@@ -2063,6 +2063,9 @@ stic Conflict Timeline */
     border-radius: 2px;
     cursor: pointer;
     min-width: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .timeline-bar.honored {
@@ -2077,6 +2080,14 @@ stic Conflict Timeline */
     opacity: 0.8;
 }
 
+.timeline-duration {
+    color: white;
+    font-size: 0.7em;
+    font-weight: 600;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+    white-space: nowrap;
+}
+
 /* Responsive minimalistic timeline */
 @media (max-width: 768px) {
     .timeline-id {
@@ -2086,5 +2097,9 @@ stic Conflict Timeline */
     
     .timeline-track {
         height: 14px;
+    }
+    
+    .timeline-duration {
+        font-size: 0.65em;
     }
 }

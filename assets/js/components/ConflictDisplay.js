@@ -166,13 +166,18 @@ class ConflictDisplay {
             const widthPercent = (duration / totalDays) * 100;
             const leftPercent = (startOffset / totalDays) * 100;
 
+            // Only show duration text if bar is wide enough (at least 15% of total width)
+            const showDuration = widthPercent >= 15;
+            const durationText = showDuration ? `<span class="timeline-duration">${duration}d</span>` : '';
+
             html += `
                 <div class="timeline-row">
                     <span class="timeline-id">ID ${reservation.id}</span>
                     <div class="timeline-track">
                         <div class="timeline-bar ${isHonored ? 'honored' : 'conflicting'}" 
                              style="left: ${leftPercent}%; width: ${widthPercent}%;"
-                             title="${reservation.getFormattedStartDate()} to ${reservation.getFormattedEndDate()}">
+                             title="${reservation.getFormattedStartDate()} to ${reservation.getFormattedEndDate()} (${duration} day${duration > 1 ? 's' : ''})">
+                            ${durationText}
                         </div>
                     </div>
                 </div>

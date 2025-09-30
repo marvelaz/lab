@@ -54,7 +54,7 @@ class DataService {
      */
     validateFile(file) {
         if (!file) return false;
-        
+
         // Check file type
         const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
         if (!CONFIG.FILE.ACCEPTED_TYPES.includes(fileExtension)) {
@@ -75,7 +75,7 @@ class DataService {
     processData() {
         this.reservations = [];
         this.invalidRows = [];
-        
+
         this.rawData.forEach((row, index) => {
             const reservation = new Reservation(row);
             if (reservation.isValid()) {
@@ -89,7 +89,7 @@ class DataService {
                 });
             }
         });
-        
+
         this.isProcessed = true;
     }
 
@@ -101,7 +101,7 @@ class DataService {
      */
     validateRowIssues(rawRow, reservation) {
         const issues = [];
-        
+
         // Check required fields
         if (!reservation.id) {
             issues.push({
@@ -111,7 +111,7 @@ class DataService {
                 severity: 'error'
             });
         }
-        
+
         if (!reservation.device) {
             issues.push({
                 field: 'Device',
@@ -120,7 +120,7 @@ class DataService {
                 severity: 'error'
             });
         }
-        
+
         if (!reservation.labRegion) {
             issues.push({
                 field: 'Lab Region',
@@ -129,7 +129,7 @@ class DataService {
                 severity: 'error'
             });
         }
-        
+
         if (!reservation.requestedBy) {
             issues.push({
                 field: 'Requested by',
@@ -138,7 +138,7 @@ class DataService {
                 severity: 'warning'
             });
         }
-        
+
         // Check dates
         if (!Utils.isValidDate(reservation.startDate)) {
             issues.push({
@@ -149,7 +149,7 @@ class DataService {
                 suggestion: 'Use format: YYYY-MM-DD'
             });
         }
-        
+
         if (!Utils.isValidDate(reservation.endDate)) {
             issues.push({
                 field: 'End Date',
@@ -159,7 +159,7 @@ class DataService {
                 suggestion: 'Use format: YYYY-MM-DD'
             });
         }
-        
+
         // Check date logic
         if (Utils.isValidDate(reservation.startDate) && Utils.isValidDate(reservation.endDate)) {
             if (reservation.startDate > reservation.endDate) {
@@ -171,7 +171,7 @@ class DataService {
                 });
             }
         }
-        
+
         // Check status
         const validStatuses = [CONFIG.STATUS.NEW, CONFIG.STATUS.ACKNOWLEDGED, CONFIG.STATUS.RESOLVED, CONFIG.STATUS.CANCELLED];
         if (reservation.status && !validStatuses.includes(reservation.status)) {
@@ -183,7 +183,7 @@ class DataService {
                 suggestion: `Valid values: ${validStatuses.join(', ')}`
             });
         }
-        
+
         return issues;
     }
 
@@ -201,7 +201,7 @@ class DataService {
      * @returns {Reservation[]} Filtered reservations
      */
     getReservationsByStatus(status) {
-        return this.reservations.filter(reservation => 
+        return this.reservations.filter(reservation =>
             reservation.hasStatus(status)
         );
     }
@@ -238,10 +238,10 @@ class DataService {
     getReservationsForStats(monthsBack = CONFIG.STATS.MONTHS_BACK) {
         // Handle special case for "all time"
         if (monthsBack === 0) {
-            const allTimeFiltered = this.reservations.filter(reservation => 
-                !reservation.hasStatus(CONFIG.STATUS.CANCELLED)
+            const allTimeFiltered = this.reservations.filter(reservation =>
+                reservation.hasStatus(CONFIG.STATUS.RESOLVED)
             );
-            console.log('All time stats - excluding only cancelled:', allTimeFiltered.length);
+            console.log('All time stats - resolved only:', allTimeFiltered.length);
             return allTimeFiltered;
         }
 
@@ -257,17 +257,17 @@ class DataService {
                 startDate: r.startDate.toISOString(),
                 status: r.status,
                 isAfterCutoff: r.startDate >= cutoffDate,
-                isCancelled: r.hasStatus(CONFIG.STATUS.CANCELLED)
+                isResolved: r.hasStatus(CONFIG.STATUS.RESOLVED)
             }))
         });
 
-        const filtered = this.reservations.filter(reservation => 
-            reservation.startDate >= cutoffDate && 
-            !reservation.hasStatus(CONFIG.STATUS.CANCELLED)
+        const filtered = this.reservations.filter(reservation =>
+            reservation.startDate >= cutoffDate &&
+            reservation.hasStatus(CONFIG.STATUS.RESOLVED)
         );
 
-        console.log('Filtered reservations count:', filtered.length);
-        
+        console.log('Filtered reservations count (resolved only):', filtered.length);
+
         return filtered;
     }
 
@@ -393,7 +393,7 @@ class DataService {
         this.invalidRows.forEach(invalidRow => {
             const fixedData = this.tryFixRow(invalidRow.rawData);
             const testReservation = new Reservation(fixedData);
-            
+
             if (testReservation.isValid()) {
                 fixedRows.push({
                     originalRow: invalidRow,
@@ -427,7 +427,7 @@ class DataService {
         if (fixedData[CONFIG.CSV_COLUMNS.START_DATE]) {
             fixedData[CONFIG.CSV_COLUMNS.START_DATE] = this.tryFixDate(fixedData[CONFIG.CSV_COLUMNS.START_DATE]);
         }
-        
+
         if (fixedData[CONFIG.CSV_COLUMNS.END_DATE]) {
             fixedData[CONFIG.CSV_COLUMNS.END_DATE] = this.tryFixDate(fixedData[CONFIG.CSV_COLUMNS.END_DATE]);
         }
@@ -456,7 +456,7 @@ class DataService {
         if (!dateStr) return dateStr;
 
         const trimmed = dateStr.trim();
-        
+
         // Try common date formats and convert to YYYY-MM-DD
         const dateFormats = [
             /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, // MM/DD/YYYY or M/D/YYYY
@@ -469,7 +469,7 @@ class DataService {
             const match = trimmed.match(format);
             if (match) {
                 let year, month, day;
-                
+
                 if (format === dateFormats[0] || format === dateFormats[1] || format === dateFormats[3]) {
                     // MM/DD/YYYY, MM-DD-YYYY, MM.DD.YYYY formats
                     month = match[1].padStart(2, '0');
@@ -481,7 +481,7 @@ class DataService {
                     month = match[2].padStart(2, '0');
                     day = match[3].padStart(2, '0');
                 }
-                
+
                 return `${year}-${month}-${day}`;
             }
         }
@@ -498,7 +498,7 @@ class DataService {
         if (!status) return status;
 
         const normalized = status.toLowerCase().trim();
-        
+
         // Map common variations to correct status
         const statusMap = {
             'new': CONFIG.STATUS.NEW,

@@ -208,41 +208,93 @@ class StatisticsService {
             actualTimeframeDays = Math.max(actualTimeframeDays, 30);
         }
 
-        // Group by region and device
+        // Group reservations by region and device
+        const deviceReservations = {};
         reservations.forEach(reservation => {
             const region = reservation.labRegion;
             const device = reservation.device;
+            const key = `${region}|${device}`;
 
-            if (!regionStats[region]) {
-                regionStats[region] = {};
-            }
-
-            if (!regionStats[region][device]) {
-                regionStats[region][device] = {
-                    reservedDays: 0,
-                    reservationCount: 0
+            if (!deviceReservations[key]) {
+                deviceReservations[key] = {
+                    region,
+                    device,
+                    reservations: []
                 };
             }
 
-            regionStats[region][device].reservedDays += reservation.getDurationInDays();
-            regionStats[region][device].reservationCount++;
+            deviceReservations[key].reservations.push(reservation);
         });
 
-        // Calculate utilization percentages using actual timeframe
+        // Calculate actual utilized days (handling overlaps)
         const result = {};
-        Object.keys(regionStats).forEach(region => {
-            result[region] = Object.entries(regionStats[region])
-                .map(([device, stats]) => ({
-                    device,
-                    reservedDays: stats.reservedDays,
-                    reservationCount: stats.reservationCount,
-                    utilizationRate: Math.round((stats.reservedDays / actualTimeframeDays) * 100 * 10) / 10,
-                    timeframeDays: actualTimeframeDays // for debugging
-                }))
-                .sort((a, b) => b.utilizationRate - a.utilizationRate);
+        Object.values(deviceReservations).forEach(deviceData => {
+            const { region, device, reservations: deviceRes } = deviceData;
+            
+            // Calculate unique days used (merge overlapping periods)
+            const uniqueDays = this.calculateUniqueDaysUsed(deviceRes);
+            
+            if (!result[region]) {
+                result[region] = [];
+            }
+
+            result[region].push({
+                device,
+                reservedDays: uniqueDays,
+                reservationCount: deviceRes.length,
+                utilizationRate: Math.round((uniqueDays / actualTimeframeDays) * 100 * 10) / 10,
+                timeframeDays: actualTimeframeDays // for debugging
+            });
+        });
+
+        // Sort by utilization rate
+        Object.keys(result).forEach(region => {
+            result[region].sort((a, b) => b.utilizationRate - a.utilizationRate);
         });
 
         return result;
+    }
+
+    /**
+     * Calculate unique days used by merging overlapping reservation periods
+     * @param {Reservation[]} reservations - Reservations for a specific device
+     * @returns {number} Number of unique days used
+     */
+    calculateUniqueDaysUsed(reservations) {
+        if (reservations.length === 0) return 0;
+
+        // Convert reservations to date ranges
+        const dateRanges = reservations.map(r => ({
+            start: new Date(r.startDate),
+            end: new Date(r.endDate)
+        })).sort((a, b) => a.start - b.start);
+
+        // Merge overlapping ranges
+        const mergedRanges = [];
+        let currentRange = dateRanges[0];
+
+        for (let i = 1; i < dateRanges.length; i++) {
+            const nextRange = dateRanges[i];
+            
+            // If ranges overlap or are adjacent, merge them
+            if (nextRange.start <= currentRange.end) {
+                currentRange.end = new Date(Math.max(currentRange.end, nextRange.end));
+            } else {
+                // No overlap, save current range and start new one
+                mergedRanges.push(currentRange);
+                currentRange = nextRange;
+            }
+        }
+        mergedRanges.push(currentRange);
+
+        // Calculate total unique days
+        let totalDays = 0;
+        mergedRanges.forEach(range => {
+            const days = Math.ceil((range.end - range.start) / (1000 * 60 * 60 * 24)) + 1;
+            totalDays += days;
+        });
+
+        return totalDays;
     }
 
     /**

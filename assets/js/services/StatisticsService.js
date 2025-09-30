@@ -86,33 +86,35 @@ class StatisticsService {
      * @returns {Array} Top users array
      */
     getTopUsers(reservations) {
-        const userStats = {};
+        const userReservations = {};
 
+        // Group reservations by user
         reservations.forEach(reservation => {
             const user = reservation.requestedBy;
 
-            if (!userStats[user]) {
-                userStats[user] = {
-                    reservationCount: 0,
-                    totalDays: 0,
+            if (!userReservations[user]) {
+                userReservations[user] = {
+                    reservations: [],
                     devices: new Set()
                 };
             }
 
-            userStats[user].reservationCount++;
-            userStats[user].totalDays += reservation.getDurationInDays();
-            userStats[user].devices.add(reservation.device);
+            userReservations[user].reservations.push(reservation);
+            userReservations[user].devices.add(reservation.device);
         });
 
-        // Convert to array with basic metrics
-        const usersArray = Object.entries(userStats)
-            .map(([user, stats]) => ({
-                user,
-                reservationCount: stats.reservationCount,
-                totalDays: stats.totalDays,
-                uniqueDevices: stats.devices.size,
-                avgDuration: Math.round(stats.totalDays / stats.reservationCount * 10) / 10
-            }));
+        // Calculate metrics with overlap handling
+        const usersArray = Object.entries(userReservations)
+            .map(([user, data]) => {
+                const uniqueDays = this.calculateUniqueDaysUsed(data.reservations);
+                return {
+                    user,
+                    reservationCount: data.reservations.length,
+                    totalDays: uniqueDays,
+                    uniqueDevices: data.devices.size,
+                    avgDuration: Math.round(uniqueDays / data.reservations.length * 10) / 10
+                };
+            });
 
         // Calculate ranking scores
         const usersWithScores = this.calculateUserRankingScores(usersArray);
@@ -433,42 +435,50 @@ class StatisticsService {
      * @returns {Object} User activity by region
      */
     getUserActivityByRegion(reservations) {
-        const regionStats = {};
+        const regionUserReservations = {};
 
+        // Group reservations by region and user
         reservations.forEach(reservation => {
             const region = reservation.labRegion;
             const user = reservation.requestedBy;
+            const key = `${region}|${user}`;
 
-            if (!regionStats[region]) {
-                regionStats[region] = {};
-            }
-
-            if (!regionStats[region][user]) {
-                regionStats[region][user] = {
-                    reservationCount: 0,
-                    totalDays: 0,
+            if (!regionUserReservations[key]) {
+                regionUserReservations[key] = {
+                    region,
+                    user,
+                    reservations: [],
                     devices: new Set()
                 };
             }
 
-            regionStats[region][user].reservationCount++;
-            regionStats[region][user].totalDays += reservation.getDurationInDays();
-            regionStats[region][user].devices.add(reservation.device);
+            regionUserReservations[key].reservations.push(reservation);
+            regionUserReservations[key].devices.add(reservation.device);
         });
 
-        // Convert to sorted arrays
+        // Calculate metrics with overlap handling
         const result = {};
-        Object.keys(regionStats).forEach(region => {
-            result[region] = Object.entries(regionStats[region])
-                .map(([user, stats]) => ({
-                    user,
-                    reservationCount: stats.reservationCount,
-                    totalDays: stats.totalDays,
-                    uniqueDevices: stats.devices.size,
-                    avgDuration: Math.round(stats.totalDays / stats.reservationCount * 10) / 10
-                }))
-                .sort((a, b) => b.reservationCount - a.reservationCount)
-                .slice(0, CONFIG.STATS.TOP_ITEMS_LIMIT);
+        Object.values(regionUserReservations).forEach(data => {
+            const { region, user, reservations: userRes, devices } = data;
+            const uniqueDays = this.calculateUniqueDaysUsed(userRes);
+
+            if (!result[region]) {
+                result[region] = [];
+            }
+
+            result[region].push({
+                user,
+                reservationCount: userRes.length,
+                totalDays: uniqueDays,
+                uniqueDevices: devices.size,
+                avgDuration: Math.round(uniqueDays / userRes.length * 10) / 10
+            });
+        });
+
+        // Sort by reservation count
+        Object.keys(result).forEach(region => {
+            result[region].sort((a, b) => b.reservationCount - a.reservationCount);
+            result[region] = result[region].slice(0, CONFIG.STATS.TOP_ITEMS_LIMIT);
         });
 
         return result;
@@ -516,44 +526,56 @@ class StatisticsService {
      * @returns {Array} User booking patterns data
      */
     getUserBookingPatterns(reservations) {
-        const userPatterns = {};
+        const userReservations = {};
 
+        // Group reservations by user
         reservations.forEach(reservation => {
             const user = reservation.requestedBy;
-            const duration = reservation.getDurationInDays();
 
-            if (!userPatterns[user]) {
-                userPatterns[user] = {
-                    shortTerm: 0, // 1-3 days
-                    mediumTerm: 0, // 4-14 days
-                    longTerm: 0, // 15+ days
-                    totalReservations: 0,
-                    totalDays: 0
-                };
+            if (!userReservations[user]) {
+                userReservations[user] = [];
             }
 
-            userPatterns[user].totalReservations++;
-            userPatterns[user].totalDays += duration;
-
-            if (duration <= 3) {
-                userPatterns[user].shortTerm++;
-            } else if (duration <= 14) {
-                userPatterns[user].mediumTerm++;
-            } else {
-                userPatterns[user].longTerm++;
-            }
+            userReservations[user].push(reservation);
         });
 
-        return Object.entries(userPatterns)
-            .map(([user, pattern]) => ({
-                user,
-                totalReservations: pattern.totalReservations,
-                avgDuration: Math.round(pattern.totalDays / pattern.totalReservations * 10) / 10,
-                shortTermPercent: Math.round((pattern.shortTerm / pattern.totalReservations) * 100),
-                mediumTermPercent: Math.round((pattern.mediumTerm / pattern.totalReservations) * 100),
-                longTermPercent: Math.round((pattern.longTerm / pattern.totalReservations) * 100),
-                pattern: this.determineBookingPattern(pattern)
-            }))
+        // Calculate patterns with overlap handling
+        return Object.entries(userReservations)
+            .map(([user, userRes]) => {
+                const uniqueDays = this.calculateUniqueDaysUsed(userRes);
+                
+                // Count pattern types based on individual reservation durations
+                let shortTerm = 0, mediumTerm = 0, longTerm = 0;
+                userRes.forEach(reservation => {
+                    const duration = reservation.getDurationInDays();
+                    if (duration <= 3) {
+                        shortTerm++;
+                    } else if (duration <= 14) {
+                        mediumTerm++;
+                    } else {
+                        longTerm++;
+                    }
+                });
+
+                const totalReservations = userRes.length;
+                const pattern = {
+                    shortTerm,
+                    mediumTerm,
+                    longTerm,
+                    totalReservations
+                };
+
+                return {
+                    user,
+                    totalReservations,
+                    avgDuration: Math.round(uniqueDays / totalReservations * 10) / 10,
+                    shortTermPercent: Math.round((shortTerm / totalReservations) * 100),
+                    mediumTermPercent: Math.round((mediumTerm / totalReservations) * 100),
+                    longTermPercent: Math.round((longTerm / totalReservations) * 100),
+                    pattern: this.determineBookingPattern(pattern),
+                    actualTotalDays: uniqueDays // for debugging
+                };
+            })
             .sort((a, b) => b.totalReservations - a.totalReservations)
             .slice(0, CONFIG.STATS.TOP_ITEMS_LIMIT);
     }

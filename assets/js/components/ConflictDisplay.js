@@ -85,7 +85,8 @@ class ConflictDisplay {
      */
     renderConflictGroup(conflict, groupNumber) {
         const primaryReservation = conflict.getPrimaryReservation();
-        const suggestedReservations = conflict.getReservationsWithSuggestions();
+        const conflictingReservations = conflict.getReservationsWithSuggestions();
+        const allReservations = [primaryReservation, ...conflictingReservations];
 
         let html = `
             <div class="conflict-group">
@@ -95,6 +96,12 @@ class ConflictDisplay {
                         (${conflict.getConflictCount()} reservations)
                     </span>
                 </div>
+                
+                <!-- Timeline Visualization -->
+                <div class="conflict-timeline">
+                    <h4 style="margin: 0 0 12px 0; color: #333; font-size: 0.95em;">📊 Timeline Visualization</h4>
+                    ${this.renderConflictTimeline(allReservations)}
+                </div>
         `;
 
         // Display primary reservation (honored)
@@ -102,23 +109,23 @@ class ConflictDisplay {
             html += `
                 <div class="reservation-item" style="border-left: 4px solid #28a745;">
                     <div style="margin-bottom: 8px;">
-                        <strong>✅ HONORED (Lowest ID)</strong>
+                        <strong>✅ HONORED RESERVATION (Lowest ID)</strong>
                     </div>
                     ${this.renderReservationDetails(primaryReservation)}
                 </div>
             `;
         }
 
-        // Display suggested reservations
-        suggestedReservations.forEach(reservation => {
+        // Display conflicting reservations
+        conflictingReservations.forEach(reservation => {
             html += `
                 <div class="reservation-item" style="border-left: 4px solid #dc3545;">
                     <div style="margin-bottom: 8px;">
-                        <strong>🔄 SUGGESTED RESOLUTION</strong>
+                        <strong>⚠️ CONFLICTING RESERVATION</strong>
                     </div>
                     ${this.renderReservationDetails(reservation)}
                     <div style="margin-top: 12px; padding: 8px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px;">
-                        <strong>💡 Suggestion:</strong> ${reservation.suggestion}
+                        <strong>💡 Suggested Resolution:</strong> ${reservation.suggestion}
                     </div>
                 </div>
             `;
@@ -126,6 +133,93 @@ class ConflictDisplay {
 
         html += '</div>';
         return html;
+    }
+
+    /**
+     * Render conflict timeline visualization
+     * @param {Reservation[]} reservations - Array of conflicting reservations
+     * @returns {string} HTML string for timeline
+     */
+    renderConflictTimeline(reservations) {
+        if (!reservations || reservations.length === 0) return '';
+
+        // Find the overall date range
+        const allDates = reservations.flatMap(r => [r.startDate, r.endDate]);
+        const minDate = new Date(Math.min(...allDates));
+        const maxDate = new Date(Math.max(...allDates));
+        
+        // Calculate total span in days
+        const totalDays = Math.ceil((maxDate - minDate) / (1000 * 60 * 60 * 24)) + 1;
+        
+        let html = `
+            <div class="timeline-container">
+                <div class="timeline-header">
+                    <div class="timeline-dates">
+                        <span class="timeline-start">${this.formatTimelineDate(minDate)}</span>
+                        <span class="timeline-end">${this.formatTimelineDate(maxDate)}</span>
+                    </div>
+                    <div class="timeline-duration">${totalDays} day${totalDays > 1 ? 's' : ''} span</div>
+                </div>
+                <div class="timeline-tracks">
+        `;
+
+        // Sort reservations by ID for consistent display
+        const sortedReservations = [...reservations].sort((a, b) => parseInt(a.id) - parseInt(b.id));
+
+        sortedReservations.forEach((reservation, index) => {
+            const isHonored = index === 0; // First (lowest ID) is honored
+            const startOffset = Math.max(0, (reservation.startDate - minDate) / (1000 * 60 * 60 * 24));
+            const duration = (reservation.endDate - reservation.startDate) / (1000 * 60 * 60 * 24) + 1;
+            const widthPercent = (duration / totalDays) * 100;
+            const leftPercent = (startOffset / totalDays) * 100;
+
+            html += `
+                <div class="timeline-track">
+                    <div class="timeline-label">
+                        <span class="reservation-id">ID ${reservation.id}</span>
+                        <span class="reservation-user">${reservation.requestedBy}</span>
+                        ${isHonored ? '<span class="honored-badge">✅</span>' : '<span class="conflict-badge">⚠️</span>'}
+                    </div>
+                    <div class="timeline-bar-container">
+                        <div class="timeline-bar ${isHonored ? 'honored' : 'conflicting'}" 
+                             style="left: ${leftPercent}%; width: ${widthPercent}%;"
+                             title="ID ${reservation.id}: ${reservation.getFormattedStartDate()} to ${reservation.getFormattedEndDate()} (${reservation.getDuration()})">
+                            <span class="timeline-bar-text">${duration} day${duration > 1 ? 's' : ''}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += `
+                </div>
+                <div class="timeline-legend">
+                    <div class="legend-item">
+                        <div class="legend-color honored"></div>
+                        <span>Honored Reservation</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color conflicting"></div>
+                        <span>Conflicting Reservation</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        return html;
+    }
+
+    /**
+     * Format date for timeline display
+     * @param {Date} date - Date to format
+     * @returns {string} Formatted date string
+     */
+    formatTimelineDate(date) {
+        return date.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric',
+            year: date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
+        });
     }
 
     /**

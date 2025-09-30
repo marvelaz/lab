@@ -1776,4 +1776,234 @@ p Page Styles */
     .help-card h3 {
         font-size: 1.1em;
     }
+}/
+* Conflict Timeline Visualization */
+.conflict-timeline {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 16px;
+    margin: 16px 0;
+}
+
+.timeline-container {
+    font-size: 0.9em;
+}
+
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.timeline-dates {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    font-weight: 600;
+    color: #495057;
+}
+
+.timeline-duration {
+    font-size: 0.85em;
+    color: #6c757d;
+    background: #e9ecef;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-left: 16px;
+    white-space: nowrap;
+}
+
+.timeline-tracks {
+    margin: 16px 0;
+}
+
+.timeline-track {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    min-height: 32px;
+}
+
+.timeline-label {
+    width: 200px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85em;
+    padding-right: 12px;
+}
+
+.reservation-id {
+    font-weight: 600;
+    color: #333;
+}
+
+.reservation-user {
+    color: #666;
+    font-size: 0.8em;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.honored-badge {
+    color: #28a745;
+    font-size: 0.9em;
+}
+
+.conflict-badge {
+    color: #dc3545;
+    font-size: 0.9em;
+}
+
+.timeline-bar-container {
+    flex: 1;
+    height: 24px;
+    background: #e9ecef;
+    border-radius: 4px;
+    position: relative;
+    border: 1px solid #dee2e6;
+}
+
+.timeline-bar {
+    position: absolute;
+    height: 100%;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    min-width: 40px;
+}
+
+.timeline-bar.honored {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border: 1px solid #1e7e34;
+}
+
+.timeline-bar.conflicting {
+    background: linear-gradient(135deg, #dc3545, #e74c3c);
+    border: 1px solid #bd2130;
+}
+
+.timeline-bar:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.timeline-bar-text {
+    color: white;
+    font-size: 0.75em;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 4px;
+}
+
+.timeline-legend {
+    display: flex;
+    gap: 20px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #dee2e6;
+    font-size: 0.85em;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.legend-color.honored {
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.legend-color.conflicting {
+    background: linear-gradient(135deg, #dc3545, #e74c3c);
+}
+
+/* Responsive timeline */
+@media (max-width: 768px) {
+    .timeline-track {
+        flex-direction: column;
+        align-items: stretch;
+        margin-bottom: 16px;
+    }
+    
+    .timeline-label {
+        width: 100%;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        padding-right: 0;
+    }
+    
+    .timeline-bar-container {
+        width: 100%;
+    }
+    
+    .timeline-header {
+        flex-direction: column;
+        gap: 8px;
+        align-items: stretch;
+    }
+    
+    .timeline-dates {
+        order: 2;
+    }
+    
+    .timeline-duration {
+        order: 1;
+        margin-left: 0;
+        text-align: center;
+    }
+    
+    .timeline-legend {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+/* Enhanced conflict group styling */
+.conflict-group {
+    margin-bottom: 32px;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.conflict-header {
+    background: #f8f9fa;
+    padding: 16px 20px;
+    font-weight: 600;
+    color: #1a1a1a;
+    border-bottom: 1px solid #e5e5e5;
+    font-size: 1.05em;
+}
+
+.reservation-item {
+    margin: 0;
+    padding: 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.reservation-item:last-child {
+    border-bottom: none;
 }

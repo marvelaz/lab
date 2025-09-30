@@ -2006,4 +2006,85 @@ p Page Styles */
 
 .reservation-item:last-child {
     border-bottom: none;
+}/* Minimali
+stic Conflict Timeline */
+.conflict-timeline {
+    background: #f8f9fa;
+    border-radius: 4px;
+    padding: 12px;
+    margin: 12px 0;
+    font-size: 0.85em;
+}
+
+.timeline-minimal {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.timeline-dates {
+    text-align: center;
+    color: #666;
+    font-size: 0.8em;
+    margin-bottom: 4px;
+}
+
+.timeline-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.timeline-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.timeline-id {
+    font-size: 0.75em;
+    color: #333;
+    font-weight: 500;
+    width: 40px;
+    flex-shrink: 0;
+}
+
+.timeline-track {
+    flex: 1;
+    height: 16px;
+    background: #e9ecef;
+    border-radius: 2px;
+    position: relative;
+}
+
+.timeline-bar {
+    position: absolute;
+    height: 100%;
+    border-radius: 2px;
+    cursor: pointer;
+    min-width: 8px;
+}
+
+.timeline-bar.honored {
+    background: #28a745;
+}
+
+.timeline-bar.conflicting {
+    background: #dc3545;
+}
+
+.timeline-bar:hover {
+    opacity: 0.8;
+}
+
+/* Responsive minimalistic timeline */
+@media (max-width: 768px) {
+    .timeline-id {
+        width: 35px;
+        font-size: 0.7em;
+    }
+    
+    .timeline-track {
+        height: 14px;
+    }
 }

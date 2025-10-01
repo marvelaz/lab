@@ -204,18 +204,26 @@ class LabEquipmentApp {
         try {
             // Use default if monthsBack is null or undefined
             const effectiveMonthsBack = monthsBack !== null ? monthsBack : CONFIG.STATS.MONTHS_BACK;
-            const statsData = this.dataService.getReservationsForStats(effectiveMonthsBack);
             
-            if (statsData.length === 0) {
+            // Get all reservations (service will filter for resolved status and timeframe)
+            const allReservations = this.dataService.getAllReservations();
+            
+            if (allReservations.length === 0) {
                 this.statisticsDisplay.showNoDataMessage();
                 return;
             }
 
-            // Generate statistics
-            const statistics = this.statisticsService.generateStatistics(statsData);
+            // Generate statistics (service handles filtering for resolved status and timeframe)
+            const statistics = this.statisticsService.generateStatistics(allReservations, effectiveMonthsBack);
+            
+            // Count resolved reservations for timeframe info
+            const resolvedReservations = allReservations.filter(r => r.status === CONFIG.STATUS.RESOLVED);
+            const filteredReservations = effectiveMonthsBack > 0 ? 
+                this.statisticsService.filterByTimeframe(resolvedReservations, effectiveMonthsBack) : 
+                resolvedReservations;
             
             // Get timeframe information
-            const timeframeInfo = this.getTimeframeInfo(effectiveMonthsBack, statsData);
+            const timeframeInfo = this.getTimeframeInfo(effectiveMonthsBack, filteredReservations);
             
             // Display statistics
             this.statisticsDisplay.displayStatistics(statistics, timeframeInfo);

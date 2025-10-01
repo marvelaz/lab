@@ -5,27 +5,31 @@ class StatisticsService {
     }
 
     /**
-     * Generate comprehensive statistics from reservations data
-     * @param {Reservation[]} reservations - Reservations to analyze
+     * Generate statistics from resolved reservations only
+     * @param {Reservation[]} reservations - All reservations to analyze
+     * @param {number} monthsBack - Number of months to look back (1, 3, 6, 12, or 0 for all time)
      * @returns {Object} Statistics object
      */
-    generateStatistics(reservations) {
-        const cacheKey = this.generateCacheKey(reservations);
+    generateStatistics(reservations, monthsBack = 0) {
+        // Filter for resolved reservations only
+        const resolvedReservations = reservations.filter(r => r.status === CONFIG.STATUS.RESOLVED);
+        
+        // Filter by timeframe if specified
+        const filteredReservations = monthsBack > 0 ? 
+            this.filterByTimeframe(resolvedReservations, monthsBack) : 
+            resolvedReservations;
+
+        const cacheKey = this.generateCacheKey(filteredReservations, monthsBack);
         
         if (this.cache.has(cacheKey)) {
             return this.cache.get(cacheKey);
         }
 
         const statistics = {
-            topDevices: this.getTopDevicesByRegion(reservations),
-            topUsers: this.getTopUsers(reservations),
-            utilizationRates: this.getUtilizationRates(reservations),
-            leastReservedDevices: this.getLeastReservedDevices(reservations),
-            summary: this.getStatisticsSummary(reservations),
-            userActivityByRegion: this.getUserActivityByRegion(reservations),
-            userDeviceDiversity: this.getUserDeviceDiversity(reservations),
-            userBookingPatterns: this.getUserBookingPatterns(reservations),
-            deviceTrends: this.getDeviceTrends(reservations)
+            deviceUtilization: this.getDeviceUtilization(filteredReservations),
+            topDevicesByRegion: this.getTopDevicesByRegion(filteredReservations),
+            topUsers: this.getTopUsers(filteredReservations),
+            summary: this.getStatisticsSummary(filteredReservations, monthsBack)
         };
 
         this.cache.set(cacheKey, statistics);
@@ -33,7 +37,81 @@ class StatisticsService {
     }
 
     /**
-     * Get top devices by region
+     * Filter reservations by timeframe (public method)
+     * @param {Reservation[]} reservations - Reservations to filter
+     * @param {number} monthsBack - Number of months to look back
+     * @returns {Reservation[]} Filtered reservations
+     */
+    filterByTimeframe(reservations, monthsBack) {
+        const cutoffDate = new Date();
+        cutoffDate.setMonth(cutoffDate.getMonth() - monthsBack);
+        
+        return reservations.filter(reservation => 
+            reservation.startDate >= cutoffDate
+        );
+    }
+
+    /**
+     * Get device utilization (days of use) for different timeframes
+     * @param {Reservation[]} reservations - Resolved reservations to analyze
+     * @returns {Object} Device utilization data for 1, 3, 6, 12 months
+     */
+    getDeviceUtilization(reservations) {
+        const timeframes = [1, 3, 6, 12];
+        const utilization = {};
+
+        timeframes.forEach(months => {
+            const filteredReservations = this.filterByTimeframe(reservations, months);
+            utilization[`${months}months`] = this.calculateDeviceUtilizationForPeriod(filteredReservations);
+        });
+
+        return utilization;
+    }
+
+    /**
+     * Calculate device utilization for a specific period
+     * @param {Reservation[]} reservations - Reservations for the period
+     * @returns {Object} Device utilization by region
+     */
+    calculateDeviceUtilizationForPeriod(reservations) {
+        const deviceStats = {};
+
+        // Group by region and device
+        reservations.forEach(reservation => {
+            const region = reservation.labRegion;
+            const device = reservation.device;
+
+            if (!deviceStats[region]) {
+                deviceStats[region] = {};
+            }
+
+            if (!deviceStats[region][device]) {
+                deviceStats[region][device] = [];
+            }
+
+            deviceStats[region][device].push(reservation);
+        });
+
+        // Calculate unique days used (handling overlaps)
+        const result = {};
+        Object.keys(deviceStats).forEach(region => {
+            result[region] = {};
+            Object.keys(deviceStats[region]).forEach(device => {
+                const deviceReservations = deviceStats[region][device];
+                const uniqueDays = this.calculateUniqueDaysUsed(deviceReservations);
+                
+                result[region][device] = {
+                    daysUsed: uniqueDays,
+                    reservationCount: deviceReservations.length
+                };
+            });
+        });
+
+        return result;
+    }
+
+    /**
+     * Get top 10 devices by region (sorted by days used)
      * @param {Reservation[]} reservations - Reservations to analyze
      * @returns {Object} Top devices grouped by region
      */
@@ -50,216 +128,114 @@ class StatisticsService {
             }
 
             if (!deviceStats[region][device]) {
-                deviceStats[region][device] = {
-                    count: 0,
-                    totalDays: 0,
-                    users: new Set()
-                };
+                deviceStats[region][device] = [];
             }
 
-            deviceStats[region][device].count++;
-            deviceStats[region][device].totalDays += reservation.getDurationInDays();
-            deviceStats[region][device].users.add(reservation.requestedBy);
+            deviceStats[region][device].push(reservation);
         });
 
-        // Convert to sorted arrays
+        // Calculate stats and sort by days used
         const result = {};
         Object.keys(deviceStats).forEach(region => {
-            result[region] = Object.entries(deviceStats[region])
-                .map(([device, stats]) => ({
-                    device,
-                    count: stats.count,
-                    totalDays: stats.totalDays,
-                    uniqueUsers: stats.users.size,
-                    avgDuration: Math.round(stats.totalDays / stats.count * 100) / 100
-                }))
-                .sort((a, b) => b.count - a.count)
-                .slice(0, CONFIG.STATS.TOP_ITEMS_LIMIT);
+            const deviceArray = Object.entries(deviceStats[region])
+                .map(([device, reservations]) => {
+                    const uniqueDays = this.calculateUniqueDaysUsed(reservations);
+                    return {
+                        device,
+                        daysUsed: uniqueDays,
+                        reservationCount: reservations.length
+                    };
+                })
+                .sort((a, b) => b.daysUsed - a.daysUsed)
+                .slice(0, 10); // Top 10
+
+            result[region] = deviceArray;
         });
 
         return result;
     }
 
     /**
-     * Get top users by activity
+     * Get top 10 active users
      * @param {Reservation[]} reservations - Reservations to analyze
-     * @returns {Array} Top users array
+     * @returns {Array} Top users array with reservations, devices, and days
      */
     getTopUsers(reservations) {
-        const userReservations = {};
+        const userStats = {};
 
         // Group reservations by user
         reservations.forEach(reservation => {
             const user = reservation.requestedBy;
 
-            if (!userReservations[user]) {
-                userReservations[user] = {
+            if (!userStats[user]) {
+                userStats[user] = {
                     reservations: [],
                     devices: new Set()
                 };
             }
 
-            userReservations[user].reservations.push(reservation);
-            userReservations[user].devices.add(reservation.device);
+            userStats[user].reservations.push(reservation);
+            userStats[user].devices.add(reservation.device);
         });
 
-        // Calculate metrics with overlap handling
-        const usersArray = Object.entries(userReservations)
+        // Calculate metrics for each user
+        const usersArray = Object.entries(userStats)
             .map(([user, data]) => {
                 const uniqueDays = this.calculateUniqueDaysUsed(data.reservations);
                 return {
                     user,
-                    reservationCount: data.reservations.length,
-                    totalDays: uniqueDays,
-                    uniqueDevices: data.devices.size,
-                    avgDuration: Math.round(uniqueDays / data.reservations.length * 100) / 100
+                    numberOfReservations: data.reservations.length,
+                    numberOfDevices: data.devices.size,
+                    numberOfDays: uniqueDays
                 };
             });
 
-        // Calculate ranking scores
-        const usersWithScores = this.calculateUserRankingScores(usersArray);
-
-        return usersWithScores
-            .sort((a, b) => b.rankingScore - a.rankingScore)
-            .slice(0, CONFIG.STATS.TOP_ITEMS_LIMIT);
+        // Sort by number of reservations (primary), then by days (secondary)
+        return usersArray
+            .sort((a, b) => {
+                if (b.numberOfReservations !== a.numberOfReservations) {
+                    return b.numberOfReservations - a.numberOfReservations;
+                }
+                return b.numberOfDays - a.numberOfDays;
+            })
+            .slice(0, 10); // Top 10
     }
 
     /**
-     * Calculate unified ranking scores for users
-     * @param {Array} users - Array of user statistics
-     * @returns {Array} Users with ranking scores
-     */
-    calculateUserRankingScores(users) {
-        if (users.length === 0) return users;
-
-        // Find max values for normalization
-        const maxReservations = Math.max(...users.map(u => u.reservationCount));
-        const maxTotalDays = Math.max(...users.map(u => u.totalDays));
-        const maxUniqueDevices = Math.max(...users.map(u => u.uniqueDevices));
-        const maxAvgDuration = Math.max(...users.map(u => u.avgDuration));
-
-        // Calculate scores with weighted components
-        return users.map(user => {
-            // Normalize each metric to 0-1 scale
-            const reservationScore = user.reservationCount / maxReservations;
-            const totalDaysScore = user.totalDays / maxTotalDays;
-            const deviceDiversityScore = user.uniqueDevices / maxUniqueDevices;
-            
-            // For average duration, we want to reward reasonable durations
-            // Very short durations (< 1 day) and very long durations (> 30 days) get lower scores
-            const avgDurationScore = this.calculateDurationScore(user.avgDuration, maxAvgDuration);
-
-            // Weighted combination of scores
-            // Activity frequency (40%) + Total usage (30%) + Device diversity (20%) + Duration efficiency (10%)
-            const rankingScore = Math.round((
-                reservationScore * 0.4 +
-                totalDaysScore * 0.3 +
-                deviceDiversityScore * 0.2 +
-                avgDurationScore * 0.1
-            ) * 100);
-
-            return {
-                ...user,
-                rankingScore
-            };
-        });
-    }
-
-    /**
-     * Calculate duration efficiency score
-     * @param {number} avgDuration - Average duration in days
-     * @param {number} maxAvgDuration - Maximum average duration
-     * @returns {number} Duration score (0-1)
-     */
-    calculateDurationScore(avgDuration, maxAvgDuration) {
-        // Optimal duration range is 2-14 days
-        const optimalMin = 2;
-        const optimalMax = 14;
-
-        if (avgDuration >= optimalMin && avgDuration <= optimalMax) {
-            // Perfect score for optimal range
-            return 1.0;
-        } else if (avgDuration < optimalMin) {
-            // Penalize very short durations (might indicate inefficient usage)
-            return Math.max(0.3, avgDuration / optimalMin * 0.8);
-        } else {
-            // Penalize very long durations (might indicate hoarding)
-            const penalty = Math.min(avgDuration / optimalMax, maxAvgDuration / optimalMax);
-            return Math.max(0.2, 1.0 - (penalty - 1.0) * 0.5);
-        }
-    }
-
-    /**
-     * Calculate utilization rates by region
+     * Get overall statistics summary
      * @param {Reservation[]} reservations - Reservations to analyze
-     * @returns {Object} Utilization rates by region
+     * @param {number} monthsBack - Number of months analyzed
+     * @returns {Object} Summary statistics
      */
-    getUtilizationRates(reservations) {
-        const regionStats = {};
-        
-        // Calculate actual timeframe from the data
-        let actualTimeframeDays = CONFIG.STATS.UTILIZATION_DAYS; // fallback
-        
-        if (reservations.length > 0) {
-            const dates = reservations.map(r => r.startDate).sort((a, b) => a - b);
-            const earliestDate = dates[0];
-            const latestDate = dates[dates.length - 1];
-            actualTimeframeDays = Math.ceil((latestDate - earliestDate) / (1000 * 60 * 60 * 24)) + 1;
-            
-            // Ensure minimum reasonable timeframe
-            actualTimeframeDays = Math.max(actualTimeframeDays, 30);
-        }
+    getStatisticsSummary(reservations, monthsBack) {
+        const totalReservations = reservations.length;
+        const totalDays = reservations.reduce((sum, r) => sum + r.getDurationInDays(), 0);
 
-        // Group reservations by region and device
-        const deviceReservations = {};
-        reservations.forEach(reservation => {
-            const region = reservation.labRegion;
-            const device = reservation.device;
-            const key = `${region}|${device}`;
+        const uniqueDevices = new Set(reservations.map(r => r.device)).size;
+        const uniqueUsers = new Set(reservations.map(r => r.requestedBy)).size;
+        const uniqueRegions = new Set(reservations.map(r => r.labRegion)).size;
 
-            if (!deviceReservations[key]) {
-                deviceReservations[key] = {
-                    region,
-                    device,
-                    reservations: []
-                };
-            }
+        // Date range
+        const dates = reservations.map(r => r.startDate).sort((a, b) => a - b);
+        const dateRange = dates.length > 0 ? {
+            earliest: Utils.formatDate(dates[0]),
+            latest: Utils.formatDate(dates[dates.length - 1])
+        } : null;
 
-            deviceReservations[key].reservations.push(reservation);
-        });
-
-        // Calculate actual utilized days (handling overlaps)
-        const result = {};
-        Object.values(deviceReservations).forEach(deviceData => {
-            const { region, device, reservations: deviceRes } = deviceData;
-            
-            // Calculate unique days used (merge overlapping periods)
-            const uniqueDays = this.calculateUniqueDaysUsed(deviceRes);
-            
-            if (!result[region]) {
-                result[region] = [];
-            }
-
-            result[region].push({
-                device,
-                reservedDays: uniqueDays,
-                reservationCount: deviceRes.length,
-                utilizationRate: Math.round((uniqueDays / actualTimeframeDays) * 100 * 100) / 100,
-                timeframeDays: actualTimeframeDays // for debugging
-            });
-        });
-
-        // Sort by utilization rate
-        Object.keys(result).forEach(region => {
-            result[region].sort((a, b) => b.utilizationRate - a.utilizationRate);
-        });
-
-        return result;
+        return {
+            totalReservations,
+            totalDays,
+            uniqueDevices,
+            uniqueUsers,
+            uniqueRegions,
+            dateRange,
+            timeframe: monthsBack === 0 ? 'All time' : `Last ${monthsBack} month${monthsBack > 1 ? 's' : ''}`
+        };
     }
 
     /**
      * Calculate unique days used by merging overlapping reservation periods
-     * @param {Reservation[]} reservations - Reservations for a specific device
+     * @param {Reservation[]} reservations - Reservations for a specific device or user
      * @returns {number} Number of unique days used
      */
     calculateUniqueDaysUsed(reservations) {
@@ -300,126 +276,14 @@ class StatisticsService {
     }
 
     /**
-     * Get least reserved devices by region
-     * @param {Reservation[]} reservations - Reservations to analyze
-     * @returns {Object} Least reserved devices by region
-     */
-    getLeastReservedDevices(reservations) {
-        const deviceStats = this.getTopDevicesByRegion(reservations);
-        
-        const result = {};
-        Object.keys(deviceStats).forEach(region => {
-            result[region] = deviceStats[region]
-                .sort((a, b) => a.count - b.count)
-                .slice(0, CONFIG.STATS.TOP_ITEMS_LIMIT);
-        });
-
-        return result;
-    }
-
-    /**
-     * Get overall statistics summary
-     * @param {Reservation[]} reservations - Reservations to analyze
-     * @returns {Object} Summary statistics
-     */
-    getStatisticsSummary(reservations) {
-        const totalReservations = reservations.length;
-        const totalDays = reservations.reduce((sum, r) => sum + r.getDurationInDays(), 0);
-        const avgDuration = totalReservations > 0 ? totalDays / totalReservations : 0;
-
-        const uniqueDevices = new Set(reservations.map(r => r.device)).size;
-        const uniqueUsers = new Set(reservations.map(r => r.requestedBy)).size;
-        const uniqueRegions = new Set(reservations.map(r => r.labRegion)).size;
-
-        // Date range
-        const dates = reservations.map(r => r.startDate).sort((a, b) => a - b);
-        const dateRange = dates.length > 0 ? {
-            earliest: Utils.formatDate(dates[0]),
-            latest: Utils.formatDate(dates[dates.length - 1])
-        } : null;
-
-        return {
-            totalReservations,
-            totalDays,
-            avgDuration: Math.round(avgDuration * 100) / 100,
-            uniqueDevices,
-            uniqueUsers,
-            uniqueRegions,
-            dateRange
-        };
-    }
-
-    /**
-     * Get device popularity trends
-     * @param {Reservation[]} reservations - Reservations to analyze
-     * @returns {Object} Device trends data
-     */
-    getDeviceTrends(reservations) {
-        const monthlyStats = {};
-
-        reservations.forEach(reservation => {
-            const monthKey = reservation.startDate.toISOString().slice(0, 7); // YYYY-MM
-            const device = reservation.device;
-
-            if (!monthlyStats[monthKey]) {
-                monthlyStats[monthKey] = {};
-            }
-
-            if (!monthlyStats[monthKey][device]) {
-                monthlyStats[monthKey][device] = 0;
-            }
-
-            monthlyStats[monthKey][device]++;
-        });
-
-        return monthlyStats;
-    }
-
-    /**
-     * Get regional comparison data
-     * @param {Reservation[]} reservations - Reservations to analyze
-     * @returns {Object} Regional comparison data
-     */
-    getRegionalComparison(reservations) {
-        const regionStats = {};
-
-        reservations.forEach(reservation => {
-            const region = reservation.labRegion;
-
-            if (!regionStats[region]) {
-                regionStats[region] = {
-                    totalReservations: 0,
-                    totalDays: 0,
-                    uniqueDevices: new Set(),
-                    uniqueUsers: new Set()
-                };
-            }
-
-            regionStats[region].totalReservations++;
-            regionStats[region].totalDays += reservation.getDurationInDays();
-            regionStats[region].uniqueDevices.add(reservation.device);
-            regionStats[region].uniqueUsers.add(reservation.requestedBy);
-        });
-
-        // Convert sets to counts
-        Object.keys(regionStats).forEach(region => {
-            regionStats[region].uniqueDevices = regionStats[region].uniqueDevices.size;
-            regionStats[region].uniqueUsers = regionStats[region].uniqueUsers.size;
-            regionStats[region].avgDuration = regionStats[region].totalReservations > 0 ?
-                Math.round(regionStats[region].totalDays / regionStats[region].totalReservations * 100) / 100 : 0;
-        });
-
-        return regionStats;
-    }
-
-    /**
      * Generate cache key for statistics
      * @param {Reservation[]} reservations - Reservations data
+     * @param {number} monthsBack - Months back parameter
      * @returns {string} Cache key
      */
-    generateCacheKey(reservations) {
+    generateCacheKey(reservations, monthsBack) {
         const ids = reservations.map(r => r.id).sort().join(',');
-        return `stats_${ids.length}_${btoa(ids).slice(0, 10)}`;
+        return `stats_${monthsBack}_${ids.length}_${btoa(ids).slice(0, 10)}`;
     }
 
     /**
@@ -427,182 +291,5 @@ class StatisticsService {
      */
     clearCache() {
         this.cache.clear();
-    }
-
-    /**
-     * Get user activity by region
-     * @param {Reservation[]} reservations - Reservations to analyze
-     * @returns {Object} User activity by region
-     */
-    getUserActivityByRegion(reservations) {
-        const regionUserReservations = {};
-
-        // Group reservations by region and user
-        reservations.forEach(reservation => {
-            const region = reservation.labRegion;
-            const user = reservation.requestedBy;
-            const key = `${region}|${user}`;
-
-            if (!regionUserReservations[key]) {
-                regionUserReservations[key] = {
-                    region,
-                    user,
-                    reservations: [],
-                    devices: new Set()
-                };
-            }
-
-            regionUserReservations[key].reservations.push(reservation);
-            regionUserReservations[key].devices.add(reservation.device);
-        });
-
-        // Calculate metrics with overlap handling
-        const result = {};
-        Object.values(regionUserReservations).forEach(data => {
-            const { region, user, reservations: userRes, devices } = data;
-            const uniqueDays = this.calculateUniqueDaysUsed(userRes);
-
-            if (!result[region]) {
-                result[region] = [];
-            }
-
-            result[region].push({
-                user,
-                reservationCount: userRes.length,
-                totalDays: uniqueDays,
-                uniqueDevices: devices.size,
-                avgDuration: Math.round(uniqueDays / userRes.length * 100) / 100
-            });
-        });
-
-        // Sort by reservation count
-        Object.keys(result).forEach(region => {
-            result[region].sort((a, b) => b.reservationCount - a.reservationCount);
-            result[region] = result[region].slice(0, CONFIG.STATS.TOP_ITEMS_LIMIT);
-        });
-
-        return result;
-    }
-
-    /**
-     * Get user device diversity statistics
-     * @param {Reservation[]} reservations - Reservations to analyze
-     * @returns {Array} User device diversity data
-     */
-    getUserDeviceDiversity(reservations) {
-        const userStats = {};
-
-        reservations.forEach(reservation => {
-            const user = reservation.requestedBy;
-
-            if (!userStats[user]) {
-                userStats[user] = {
-                    devices: new Set(),
-                    reservationCount: 0,
-                    regions: new Set()
-                };
-            }
-
-            userStats[user].devices.add(reservation.device);
-            userStats[user].reservationCount++;
-            userStats[user].regions.add(reservation.labRegion);
-        });
-
-        return Object.entries(userStats)
-            .map(([user, stats]) => ({
-                user,
-                uniqueDevices: stats.devices.size,
-                uniqueRegions: stats.regions.size,
-                reservationCount: stats.reservationCount,
-                diversityScore: Math.round((stats.devices.size / stats.reservationCount) * 100)
-            }))
-            .sort((a, b) => b.diversityScore - a.diversityScore)
-            .slice(0, CONFIG.STATS.TOP_ITEMS_LIMIT);
-    }
-
-    /**
-     * Get user booking patterns
-     * @param {Reservation[]} reservations - Reservations to analyze
-     * @returns {Array} User booking patterns data
-     */
-    getUserBookingPatterns(reservations) {
-        const userReservations = {};
-
-        // Group reservations by user
-        reservations.forEach(reservation => {
-            const user = reservation.requestedBy;
-
-            if (!userReservations[user]) {
-                userReservations[user] = [];
-            }
-
-            userReservations[user].push(reservation);
-        });
-
-        // Calculate patterns with overlap handling
-        return Object.entries(userReservations)
-            .map(([user, userRes]) => {
-                const uniqueDays = this.calculateUniqueDaysUsed(userRes);
-                
-                // Count pattern types based on individual reservation durations
-                let shortTerm = 0, mediumTerm = 0, longTerm = 0;
-                userRes.forEach(reservation => {
-                    const duration = reservation.getDurationInDays();
-                    if (duration <= 3) {
-                        shortTerm++;
-                    } else if (duration <= 14) {
-                        mediumTerm++;
-                    } else {
-                        longTerm++;
-                    }
-                });
-
-                const totalReservations = userRes.length;
-                const pattern = {
-                    shortTerm,
-                    mediumTerm,
-                    longTerm,
-                    totalReservations
-                };
-
-                return {
-                    user,
-                    totalReservations,
-                    avgDuration: Math.round(uniqueDays / totalReservations * 100) / 100,
-                    shortTermPercent: Math.round((shortTerm / totalReservations) * 100),
-                    mediumTermPercent: Math.round((mediumTerm / totalReservations) * 100),
-                    longTermPercent: Math.round((longTerm / totalReservations) * 100),
-                    pattern: this.determineBookingPattern(pattern),
-                    actualTotalDays: uniqueDays // for debugging
-                };
-            })
-            .sort((a, b) => b.totalReservations - a.totalReservations)
-            .slice(0, CONFIG.STATS.TOP_ITEMS_LIMIT);
-    }
-
-    /**
-     * Determine booking pattern type
-     * @param {Object} pattern - Pattern data
-     * @returns {string} Pattern type
-     */
-    determineBookingPattern(pattern) {
-        const total = pattern.totalReservations;
-        const shortPercent = (pattern.shortTerm / total) * 100;
-        const longPercent = (pattern.longTerm / total) * 100;
-
-        if (shortPercent >= 70) return 'Quick User';
-        if (longPercent >= 50) return 'Long-term User';
-        return 'Balanced User';
-    }
-
-    /**
-     * Get cache statistics
-     * @returns {Object} Cache information
-     */
-    getCacheInfo() {
-        return {
-            size: this.cache.size,
-            keys: Array.from(this.cache.keys())
-        };
     }
 }

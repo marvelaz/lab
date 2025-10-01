@@ -11,13 +11,17 @@ class StatisticsService {
      * @returns {Object} Statistics object
      */
     generateStatistics(reservations, monthsBack = 0) {
+        console.log('StatisticsService.generateStatistics called with:', reservations.length, 'reservations, monthsBack:', monthsBack);
+        
         // Filter for resolved reservations only
         const resolvedReservations = reservations.filter(r => r.status === CONFIG.STATUS.RESOLVED);
+        console.log('Resolved reservations:', resolvedReservations.length);
         
         // Filter by timeframe if specified
         const filteredReservations = monthsBack > 0 ? 
             this.filterByTimeframe(resolvedReservations, monthsBack) : 
             resolvedReservations;
+        console.log('Filtered reservations for', monthsBack, 'months:', filteredReservations.length);
 
         const cacheKey = this.generateCacheKey(filteredReservations, monthsBack);
         

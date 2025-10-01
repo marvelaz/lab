@@ -204,6 +204,7 @@ class LabEquipmentApp {
         try {
             // Use default if monthsBack is null or undefined
             const effectiveMonthsBack = monthsBack !== null ? monthsBack : CONFIG.STATS.MONTHS_BACK;
+            console.log('loadStatistics called with monthsBack:', monthsBack, 'effective:', effectiveMonthsBack);
             
             // Get all reservations (service will filter for resolved status and timeframe)
             const allReservations = this.dataService.getAllReservations();
@@ -239,8 +240,14 @@ class LabEquipmentApp {
      * @param {number} monthsBack - Number of months to look back
      */
     handleStatisticsTimeframeChanged(monthsBack) {
+        console.log('App received timeframe change event:', monthsBack);
         if (this.dataService.isDataProcessed()) {
+            console.log('Loading statistics for', monthsBack, 'months');
+            // Clear cache to ensure fresh data
+            this.statisticsService.clearCache();
             this.loadStatistics(monthsBack);
+        } else {
+            console.log('No data processed yet');
         }
     }
 

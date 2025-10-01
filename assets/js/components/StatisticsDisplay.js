@@ -29,6 +29,20 @@ class StatisticsDisplay {
                 this.handleTimeframeChange();
             });
         }
+
+        const refreshStatsBtn = document.getElementById('refreshStatsBtn');
+        if (refreshStatsBtn) {
+            refreshStatsBtn.addEventListener('click', () => {
+                this.handleRefreshStats();
+            });
+        }
+
+        const debugStatsBtn = document.getElementById('debugStatsBtn');
+        if (debugStatsBtn) {
+            debugStatsBtn.addEventListener('click', () => {
+                this.handleDebugStats();
+            });
+        }
     }
 
     /**
@@ -36,11 +50,34 @@ class StatisticsDisplay {
      */
     handleTimeframeChange() {
         const selectedMonths = parseInt(this.timeframeSelect.value);
+        console.log('Timeframe changed to:', selectedMonths, 'months');
         
         // Dispatch event to trigger statistics refresh
         const event = new CustomEvent('statisticsTimeframeChanged', {
             detail: { monthsBack: selectedMonths }
         });
+        document.dispatchEvent(event);
+    }
+
+    /**
+     * Handle refresh statistics button click
+     */
+    handleRefreshStats() {
+        const selectedMonths = parseInt(this.timeframeSelect.value);
+        
+        // Dispatch event to trigger statistics refresh
+        const event = new CustomEvent('statisticsRefreshRequested', {
+            detail: { monthsBack: selectedMonths }
+        });
+        document.dispatchEvent(event);
+    }
+
+    /**
+     * Handle debug statistics button click
+     */
+    handleDebugStats() {
+        // Dispatch event to trigger debug information
+        const event = new CustomEvent('statisticsDebugRequested');
         document.dispatchEvent(event);
     }
 
@@ -51,6 +88,9 @@ class StatisticsDisplay {
      */
     displayStatistics(statistics, timeframeInfo = null) {
         if (!this.statsContent) return;
+
+        console.log('Displaying statistics:', statistics);
+        console.log('Timeframe info:', timeframeInfo);
 
         this.showStatsContent();
         

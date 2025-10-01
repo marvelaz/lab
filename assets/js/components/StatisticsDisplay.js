@@ -290,16 +290,10 @@ class StatisticsDisplay {
      * @param {Object} topDevices - Top devices data by region
      */
     displayTopDevicesCard(topDevices) {
-        console.log('displayTopDevicesCard called with:', topDevices);
-        
         const container = document.getElementById('topDevicesChart');
-        if (!container) {
-            console.error('Container topDevicesChart not found');
-            return;
-        }
+        if (!container) return;
 
         const regions = Object.keys(topDevices);
-        console.log('Regions found:', regions);
         
         if (regions.length === 0) {
             container.innerHTML = '<div class="unified-stats-card"><p class="no-data">No data available</p></div>';

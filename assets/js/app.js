@@ -499,13 +499,15 @@ Status Breakdown:
         this.dataService.reset();
         this.conflictService.reset();
         this.conflictDisplay.clear();
-        this.statisticsDisplay.clear();
-        this.powerDisplay.clear();
-        this.remoteHandsDisplay.clear();
+        // Don't clear statistics/power/remote hands displays on reset
+        // They should only be cleared when explicitly needed
         
         // Reset UI
         Utils.toggleLoading(false);
-        document.getElementById('results').style.display = 'none';
+        const resultsElement = document.getElementById('results');
+        if (resultsElement) {
+            resultsElement.style.display = 'none';
+        }
     }
 }
 

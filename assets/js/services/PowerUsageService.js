@@ -426,8 +426,8 @@ class PowerUsageService {
             totalEnergyKwh: Math.round(totalEnergyKwh * 100) / 100,
             totalCost: Math.round(totalCost * 100) / 100,
             totalCarbonFootprint: Math.round(totalCarbonFootprint * 100) / 100,
-            avgPowerDraw: Math.round(avgPowerDraw * 10) / 10,
-            peakPowerDraw: Math.round(peakPowerDraw * 10) / 10,
+            avgPowerDraw: Math.round(avgPowerDraw * 100) / 100,
+            peakPowerDraw: Math.round(peakPowerDraw * 100) / 100,
             validReadings,
             totalReservations: reservations.length,
             dataCompleteness: Math.round((validReadings / reservations.length) * 100)

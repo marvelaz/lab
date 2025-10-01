@@ -406,7 +406,7 @@ class StatisticsService {
             regionStats[region].uniqueDevices = regionStats[region].uniqueDevices.size;
             regionStats[region].uniqueUsers = regionStats[region].uniqueUsers.size;
             regionStats[region].avgDuration = regionStats[region].totalReservations > 0 ?
-                Math.round(regionStats[region].totalDays / regionStats[region].totalReservations * 10) / 10 : 0;
+                Math.round(regionStats[region].totalDays / regionStats[region].totalReservations * 100) / 100 : 0;
         });
 
         return regionStats;
@@ -471,7 +471,7 @@ class StatisticsService {
                 reservationCount: userRes.length,
                 totalDays: uniqueDays,
                 uniqueDevices: devices.size,
-                avgDuration: Math.round(uniqueDays / userRes.length * 10) / 10
+                avgDuration: Math.round(uniqueDays / userRes.length * 100) / 100
             });
         });
 
@@ -568,7 +568,7 @@ class StatisticsService {
                 return {
                     user,
                     totalReservations,
-                    avgDuration: Math.round(uniqueDays / totalReservations * 10) / 10,
+                    avgDuration: Math.round(uniqueDays / totalReservations * 100) / 100,
                     shortTermPercent: Math.round((shortTerm / totalReservations) * 100),
                     mediumTermPercent: Math.round((mediumTerm / totalReservations) * 100),
                     longTermPercent: Math.round((longTerm / totalReservations) * 100),

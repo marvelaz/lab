@@ -2,11 +2,14 @@
 class Reservation {
     constructor(data) {
         this.id = data[CONFIG.CSV_COLUMNS.ID];
+        this.smartId = data[CONFIG.CSV_COLUMNS.SMART_ID];
         this.device = data[CONFIG.CSV_COLUMNS.DEVICE];
         this.labRegion = data[CONFIG.CSV_COLUMNS.LAB_REGION];
         this.startDate = new Date(data[CONFIG.CSV_COLUMNS.START_DATE]);
         this.endDate = new Date(data[CONFIG.CSV_COLUMNS.END_DATE]);
         this.requestedBy = data[CONFIG.CSV_COLUMNS.REQUESTED_BY];
+        this.cablingChange = data[CONFIG.CSV_COLUMNS.CABLING_CHANGE];
+        this.approvedBy = data[CONFIG.CSV_COLUMNS.APPROVED_BY];
         this.status = Utils.normalize(data[CONFIG.CSV_COLUMNS.STATUS]);
         this.suggestion = null; // For conflict resolution suggestions
         this.rawData = data; // Keep original data for reference

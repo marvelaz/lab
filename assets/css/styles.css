@@ -2489,3 +2489,355 @@ emote Hands Analytics Styles - Minimalist Grey Theme */
         align-self: flex-start;
     }
 }
+/* R
+emote Hands Analytics Styles */
+.remote-hands-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.remote-hands-summary-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+}
+
+.remote-hands-card-value {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.remote-hands-card-label {
+    font-size: 1em;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.remote-hands-card-subtitle {
+    font-size: 0.85em;
+    color: #888;
+}
+
+/* Regional Capacity Styles */
+.regional-capacity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.region-capacity-item {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 16px;
+}
+
+.capacity-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.capacity-status.ok {
+    background: #d4edda;
+    color: #155724;
+}
+
+.capacity-status.warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.capacity-status.critical {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Utilization Bar Styles */
+.remote-hands-utilization-bar {
+    width: 100%;
+    height: 12px;
+    background: #e9ecef;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+}
+
+.remote-hands-utilization-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.3s ease;
+}
+
+.utilization-low {
+    background: #6c757d;
+}
+
+.utilization-medium {
+    background: #495057;
+}
+
+.utilization-high {
+    background: #343a40;
+}
+
+.utilization-critical {
+    background: #212529;
+}
+
+/* Capacity Alerts */
+.capacity-alerts {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.capacity-alert {
+    padding: 16px;
+    border-radius: 6px;
+    border-left: 4px solid;
+}
+
+.capacity-alert.info {
+    background: #d1ecf1;
+    border-left-color: #17a2b8;
+    color: #0c5460;
+}
+
+.capacity-alert.warning {
+    background: #fff3cd;
+    border-left-color: #ffc107;
+    color: #856404;
+}
+
+.capacity-alert.critical {
+    background: #f8d7da;
+    border-left-color: #dc3545;
+    color: #721c24;
+}
+
+.alert-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.alert-message {
+    font-size: 0.9em;
+}
+
+/* Device Maintenance List */
+.device-maintenance-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.device-maintenance-item {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 16px;
+    transition: box-shadow 0.2s ease;
+}
+
+.device-maintenance-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.device-rank {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: #666;
+    margin-right: 16px;
+    min-width: 30px;
+    text-align: center;
+}
+
+.device-maintenance-info {
+    flex: 1;
+}
+
+.device-maintenance-name {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.device-maintenance-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.maintenance-metric {
+    font-size: 0.85em;
+    color: #666;
+    padding: 4px 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.maintenance-metric.hours {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.maintenance-metric.cost {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.maintenance-metric.percentage {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+/* Responsive Design for Remote Hands */
+@media (max-width: 768px) {
+    .remote-hands-summary-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .device-maintenance-metrics {
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .device-maintenance-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .device-rank {
+        margin-right: 0;
+        margin-bottom: 8px;
+    }
+}/* A
+dditional Remote Hands Styles */
+.efficiency-opportunities {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.efficiency-item {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 12px;
+}
+
+.efficiency-device {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.efficiency-suggestion {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.regional-impact-list,
+.regional-user-activity {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.regional-impact-item,
+.region-user-item {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.region-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.impact-metrics,
+.user-activity-stats {
+    display: flex;
+    gap: 12px;
+}
+
+.impact-hours,
+.impact-changes,
+.impact-cost {
+    font-size: 0.85em;
+    color: #666;
+    padding: 4px 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.efficiency-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+}
+
+.metric-card {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 16px;
+    text-align: center;
+}
+
+.metric-value {
+    font-size: 1.5em;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.metric-label {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.weekly-breakdown {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 20px;
+    text-align: center;
+}
+
+.weekly-value {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.weekly-label {
+    font-size: 1em;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 12px;
+}
+
+.weekly-note {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e9ecef;
+}

@@ -4,15 +4,13 @@ class LabEquipmentApp {
         this.dataService = new DataService();
         this.conflictService = new ConflictService();
         this.statisticsService = new StatisticsService();
-        this.powerUsageService = new PowerUsageService();
-        this.remoteHandsService = new RemoteHandsService();
+
         
         this.navigation = new Navigation();
         this.fileUpload = new FileUpload(this.dataService);
         this.conflictDisplay = new ConflictDisplay();
         this.statisticsDisplay = new StatisticsDisplay();
-        this.powerDisplay = new PowerDisplay();
-        this.remoteHandsDisplay = new RemoteHandsDisplay();
+
         
         this.init();
     }
@@ -28,15 +26,9 @@ class LabEquipmentApp {
         this.fileUpload.init();
         this.conflictDisplay.init();
         this.statisticsDisplay.init();
-        this.powerDisplay.init();
-        this.remoteHandsDisplay.init();
+
         
-        // Initialize power service with configuration
-        this.powerUsageService.init({
-            netboxUrl: CONFIG.POWER.NETBOX_URL,
-            apcUrl: CONFIG.POWER.APC_URL,
-            apiKeys: {} // Add your API keys here
-        });
+
         
         // Set up event listeners
         this.setupEventListeners();
@@ -76,14 +68,7 @@ class LabEquipmentApp {
             this.handleStatisticsDebugRequested();
         });
 
-        // Remote hands events
-        document.addEventListener('remoteHandsTimeframeChanged', (event) => {
-            this.handleRemoteHandsTimeframeChanged(event.detail.monthsBack);
-        });
 
-        document.addEventListener('remoteHandsRefreshRequested', (event) => {
-            this.handleRemoteHandsRefreshRequested(event.detail.monthsBack);
-        });
 
         // Error handling
         window.addEventListener('error', (event) => {
@@ -208,12 +193,6 @@ class LabEquipmentApp {
             const timeframeSelect = document.getElementById('timeframeSelect');
             const selectedMonths = timeframeSelect ? parseInt(timeframeSelect.value) : CONFIG.STATS.MONTHS_BACK;
             this.loadStatistics(selectedMonths);
-        } else if (pageId === 'power' && this.dataService.isDataProcessed()) {
-            this.loadPowerStatistics();
-        } else if (pageId === 'remotehands' && this.dataService.isDataProcessed()) {
-            const timeframeSelect = document.getElementById('remoteHandsTimeframeSelect');
-            const selectedMonths = timeframeSelect ? parseInt(timeframeSelect.value) : CONFIG.STATS.MONTHS_BACK;
-            this.loadRemoteHandsAnalytics(selectedMonths);
         }
     }
 
@@ -379,118 +358,7 @@ Status Breakdown:
         };
     }
 
-    /**
-     * Load and display power statistics
-     */
-    async loadPowerStatistics() {
-        try {
-            Utils.toggleLoading(true);
-            
-            const statsData = this.dataService.getReservationsForStats();
-            
-            if (statsData.length === 0) {
-                this.powerDisplay.showNoDataMessage();
-                Utils.toggleLoading(false);
-                return;
-            }
 
-            // Generate power statistics
-            const powerStatistics = await this.powerUsageService.generatePowerStatistics(statsData);
-            
-            // Display power statistics
-            this.powerDisplay.displayPowerStatistics(powerStatistics);
-            
-            Utils.toggleLoading(false);
-            
-        } catch (error) {
-            Utils.logError('App.loadPowerStatistics', error);
-            Utils.toggleLoading(false);
-            this.showError('Failed to load power statistics. Please try again.');
-        }
-    }
-
-    /**
-     * Load and display remote hands analytics
-     * @param {number} monthsBack - Number of months to look back
-     */
-    async loadRemoteHandsAnalytics(monthsBack = null) {
-        try {
-            const effectiveMonthsBack = monthsBack !== null ? monthsBack : CONFIG.STATS.MONTHS_BACK;
-            const statsData = this.dataService.getReservationsForStats(effectiveMonthsBack);
-            
-            if (statsData.length === 0) {
-                this.remoteHandsDisplay.showNoDataMessage();
-                return;
-            }
-
-            // Generate remote hands analytics
-            const analytics = this.remoteHandsService.generateRemoteHandsAnalytics(statsData, effectiveMonthsBack);
-            
-            // Check if there are any cabling changes
-            if (analytics.summary.totalChanges === 0) {
-                this.remoteHandsDisplay.showNoDataMessage();
-                return;
-            }
-
-            // Get timeframe information
-            const timeframeInfo = this.getRemoteHandsTimeframeInfo(effectiveMonthsBack, analytics);
-            
-            // Display analytics
-            this.remoteHandsDisplay.displayRemoteHandsAnalytics(analytics, timeframeInfo);
-            
-        } catch (error) {
-            Utils.logError('App.loadRemoteHandsAnalytics', error);
-            this.showError('Failed to load remote hands analytics. Please try again.');
-        }
-    }
-
-    /**
-     * Handle remote hands timeframe change
-     * @param {number} monthsBack - Number of months to look back
-     */
-    handleRemoteHandsTimeframeChanged(monthsBack) {
-        if (this.dataService.isDataProcessed()) {
-            this.loadRemoteHandsAnalytics(monthsBack);
-        }
-    }
-
-    /**
-     * Handle remote hands refresh request
-     * @param {number} monthsBack - Number of months to look back
-     */
-    handleRemoteHandsRefreshRequested(monthsBack) {
-        if (this.dataService.isDataProcessed()) {
-            this.remoteHandsService.clearCache();
-            this.loadRemoteHandsAnalytics(monthsBack);
-        }
-    }
-
-    /**
-     * Get remote hands timeframe information
-     * @param {number} monthsBack - Number of months back
-     * @param {Object} analytics - Remote hands analytics data
-     * @returns {Object} Timeframe information
-     */
-    getRemoteHandsTimeframeInfo(monthsBack, analytics) {
-        const cablingReservations = this.dataService.getReservationsForStats(monthsBack)
-            .filter(r => r.rawData[CONFIG.CSV_COLUMNS.CABLING_CHANGE] && 
-                        r.rawData[CONFIG.CSV_COLUMNS.CABLING_CHANGE].toLowerCase().trim() === 'yes');
-        
-        let dateRange = null;
-        if (cablingReservations.length > 0) {
-            const dates = cablingReservations.map(r => r.startDate).sort((a, b) => a - b);
-            dateRange = {
-                earliest: Utils.formatDate(dates[0]),
-                latest: Utils.formatDate(dates[dates.length - 1])
-            };
-        }
-
-        return {
-            monthsBack: monthsBack,
-            totalChanges: analytics.summary.totalChanges,
-            dateRange: dateRange
-        };
-    }
 
     /**
      * Reset application state

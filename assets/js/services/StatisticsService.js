@@ -244,7 +244,7 @@ class StatisticsService {
                 device,
                 reservedDays: uniqueDays,
                 reservationCount: deviceRes.length,
-                utilizationRate: Math.round((uniqueDays / actualTimeframeDays) * 100 * 10) / 10,
+                utilizationRate: Math.round((uniqueDays / actualTimeframeDays) * 100 * 100) / 100,
                 timeframeDays: actualTimeframeDays // for debugging
             });
         });
@@ -341,7 +341,7 @@ class StatisticsService {
         return {
             totalReservations,
             totalDays,
-            avgDuration: Math.round(avgDuration * 10) / 10,
+            avgDuration: Math.round(avgDuration * 100) / 100,
             uniqueDevices,
             uniqueUsers,
             uniqueRegions,

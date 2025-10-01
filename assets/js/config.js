@@ -52,11 +52,24 @@ const CONFIG = {
     // CSV column mappings
     CSV_COLUMNS: {
         ID: 'ID',
+        SMART_ID: 'SMART ID',
         DEVICE: 'Device',
         LAB_REGION: 'Lab Region',
         START_DATE: 'Start Date',
         END_DATE: 'End Date',
         REQUESTED_BY: 'Requested by',
+        CABLING_CHANGE: 'Cabling Change?',
+        APPROVED_BY: 'Approved by',
         STATUS: 'Status'
+    },
+
+    // Remote Hands Configuration
+    REMOTE_HANDS: {
+        HOURS_PER_MONTH_PER_REGION: 20,
+        COST_PER_HOUR: 120, // Configurable $/hour
+        WARNING_THRESHOLD: 0.8, // 80% - Warning level
+        CRITICAL_THRESHOLD: 0.95, // 95% - Critical level
+        CABLING_CHANGE_HOURS: 1, // 1 hour per "yes" in cabling change
+        CURRENCY: 'USD'
     }
 };

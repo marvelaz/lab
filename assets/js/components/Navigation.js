@@ -2,7 +2,7 @@
 class Navigation {
     constructor() {
         this.currentPage = 'validation';
-        this.pages = ['validation', 'statistics', 'power', 'help'];
+        this.pages = ['validation', 'statistics', 'power', 'remotehands', 'help'];
         this.navTabs = null;
         this.pageElements = null;
     }

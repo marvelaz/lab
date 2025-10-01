@@ -15,6 +15,7 @@
                 <button class="nav-tab active" data-page="validation">Conflict Validation</button>
                 <button class="nav-tab" data-page="statistics">Usage Statistics</button>
                 <button class="nav-tab" data-page="power">Power Usage</button>
+                <button class="nav-tab" data-page="remotehands">🔧 Remote Hands</button>
                 <button class="nav-tab" data-page="help">📖 Help</button>
             </div>
         </div>
@@ -208,6 +209,135 @@
                     <h3>No Power Data Available</h3>
                     <p>Please upload and validate reservations data first to view power usage analytics.</p>
                     <button id="goToPowerValidationBtn" class="upload-btn">Go to Validation Page</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Remote Hands Page -->
+        <div id="remotehands" class="page">
+            <div class="page-content">
+                <div class="header">
+                    <h1>🔧 Remote Hands Analytics</h1>
+                    <p>Monitor remote hands capacity, utilization, and efficiency across lab regions</p>
+                    
+                    <div class="stats-controls">
+                        <div class="timeframe-selector">
+                            <label for="remoteHandsTimeframeSelect" style="margin-right: 8px; font-weight: 500;">Timeframe:</label>
+                            <select id="remoteHandsTimeframeSelect" style="padding: 6px 12px; border: 1px solid #e5e5e5; border-radius: 4px; background: white;">
+                                <option value="1">Last 1 month</option>
+                                <option value="3">Last 3 months</option>
+                                <option value="6" selected>Last 6 months</option>
+                                <option value="12">Last 12 months</option>
+                                <option value="0">All time</option>
+                            </select>
+                            <button id="refreshRemoteHandsBtn" style="margin-left: 8px; padding: 6px 12px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                🔄 Refresh
+                            </button>
+                        </div>
+                        <div id="remoteHandsTimeframeInfo" style="margin-top: 8px; font-size: 0.85em; color: #666;"></div>
+                    </div>
+                </div>
+
+                <div id="remoteHandsContent" style="display: none;">
+                    <!-- Remote Hands Category Tabs -->
+                    <div class="stats-category-tabs">
+                        <button class="stats-category-tab active" data-category="capacity">
+                            📊 Capacity Overview
+                        </button>
+                        <button class="stats-category-tab" data-category="devices">
+                            🔧 Device Analysis
+                        </button>
+                        <button class="stats-category-tab" data-category="users">
+                            👥 User Analysis
+                        </button>
+                    </div>
+
+                    <!-- Capacity Overview Section -->
+                    <div id="capacitySection" class="stats-category-section active">
+                        <div class="stats-grid">
+                            <div class="stats-section">
+                                <h3 class="stats-title">Regional Capacity Utilization</h3>
+                                <div id="regionalCapacityChart"></div>
+                            </div>
+
+                            <div class="stats-section">
+                                <h3 class="stats-title">Monthly Summary</h3>
+                                <div id="monthlySummaryCards"></div>
+                            </div>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stats-section">
+                                <h3 class="stats-title">Weekly Breakdown</h3>
+                                <div id="weeklyBreakdownChart"></div>
+                            </div>
+
+                            <div class="stats-section">
+                                <h3 class="stats-title">Capacity Alerts</h3>
+                                <div id="capacityAlerts"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Device Analysis Section -->
+                    <div id="deviceAnalysisSection" class="stats-category-section">
+                        <div class="stats-grid">
+                            <div class="stats-section">
+                                <h3 class="stats-title">High-Maintenance Devices</h3>
+                                <div id="highMaintenanceDevices"></div>
+                            </div>
+
+                            <div class="stats-section">
+                                <h3 class="stats-title">Device Efficiency Opportunities</h3>
+                                <div id="deviceEfficiencyOpportunities"></div>
+                            </div>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stats-section">
+                                <h3 class="stats-title">Regional Device Impact</h3>
+                                <div id="regionalDeviceImpact"></div>
+                            </div>
+
+                            <div class="stats-section">
+                                <h3 class="stats-title">Device Trends</h3>
+                                <div id="deviceMaintenanceTrends"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Analysis Section -->
+                    <div id="userAnalysisSection" class="stats-category-section">
+                        <div class="stats-grid">
+                            <div class="stats-section">
+                                <h3 class="stats-title">Top Remote Hands Users</h3>
+                                <div id="topRemoteHandsUsers"></div>
+                            </div>
+
+                            <div class="stats-section">
+                                <h3 class="stats-title">User Efficiency Metrics</h3>
+                                <div id="userEfficiencyMetrics"></div>
+                            </div>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stats-section">
+                                <h3 class="stats-title">Regional User Activity</h3>
+                                <div id="regionalUserActivity"></div>
+                            </div>
+
+                            <div class="stats-section">
+                                <h3 class="stats-title">User Patterns</h3>
+                                <div id="userRemoteHandsPatterns"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="remoteHandsPlaceholder" class="upload-section">
+                    <h3>No Remote Hands Data Available</h3>
+                    <p>Please upload and validate reservations data first to view remote hands analytics.</p>
+                    <button id="goToRemoteHandsValidationBtn" class="upload-btn">Go to Validation Page</button>
                 </div>
             </div>
         </div>

@@ -3016,4 +3016,78 @@ emote Hands Analytics Styles */
 
 .stats-btn.debug-btn:hover {
     background: #c82333;
+}/*
+ Single Timeframe Utilization Styles */
+.single-timeframe-utilization {
+    padding: 20px;
+}
+
+.timeframe-header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #333;
+}
+
+.timeframe-header h4 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.regions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.no-data-small {
+    color: #666;
+    font-style: italic;
+    font-size: 14px;
+    text-align: center;
+    padding: 10px;
+}
+
+.device-rank {
+    background: #007bff;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 12px;
+    margin-right: 8px;
+    min-width: 20px;
+    text-align: center;
+    display: inline-block;
+}
+
+/* Update existing device-item for better layout with rank */
+.device-item {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    font-size: 13px;
+    gap: 8px;
+}
+
+.device-item .device-name {
+    flex: 1;
+    font-weight: 600;
+    color: #333;
+}
+
+.device-item .device-days {
+    font-weight: 600;
+    color: #007bff;
+}
+
+.device-item .device-reservations {
+    color: #666;
+    font-size: 12px;
 }

@@ -11,17 +11,13 @@ class StatisticsService {
      * @returns {Object} Statistics object
      */
     generateStatistics(reservations, monthsBack = 0) {
-        console.log('StatisticsService.generateStatistics called with:', reservations.length, 'reservations, monthsBack:', monthsBack);
-        
         // Filter for resolved reservations only
         const resolvedReservations = reservations.filter(r => r.status === CONFIG.STATUS.RESOLVED);
-        console.log('Resolved reservations:', resolvedReservations.length);
         
         // Filter by timeframe if specified
         const filteredReservations = monthsBack > 0 ? 
             this.filterByTimeframe(resolvedReservations, monthsBack) : 
             resolvedReservations;
-        console.log('Filtered reservations for', monthsBack, 'months:', filteredReservations.length);
 
         const cacheKey = this.generateCacheKey(filteredReservations, monthsBack);
         
@@ -30,7 +26,7 @@ class StatisticsService {
         }
 
         const statistics = {
-            deviceUtilization: this.getDeviceUtilization(filteredReservations),
+            deviceUtilization: this.getDeviceUtilization(filteredReservations, monthsBack),
             topDevicesByRegion: this.getTopDevicesByRegion(filteredReservations),
             topUsers: this.getTopUsers(filteredReservations),
             summary: this.getStatisticsSummary(filteredReservations, monthsBack)
@@ -43,12 +39,16 @@ class StatisticsService {
     /**
      * Filter reservations by timeframe (public method)
      * @param {Reservation[]} reservations - Reservations to filter
-     * @param {number} monthsBack - Number of months to look back
+     * @param {number} monthsBack - Number of months to look back (converted to days)
      * @returns {Reservation[]} Filtered reservations
      */
     filterByTimeframe(reservations, monthsBack) {
+        if (monthsBack === 0) return reservations; // All time
+        
         const cutoffDate = new Date();
-        cutoffDate.setMonth(cutoffDate.getMonth() - monthsBack);
+        // Convert months to days for more precise calculation
+        const daysBack = this.monthsToDays(monthsBack);
+        cutoffDate.setDate(cutoffDate.getDate() - daysBack);
         
         return reservations.filter(reservation => 
             reservation.startDate >= cutoffDate
@@ -56,20 +56,46 @@ class StatisticsService {
     }
 
     /**
-     * Get device utilization (days of use) for different timeframes
-     * @param {Reservation[]} reservations - Resolved reservations to analyze
-     * @returns {Object} Device utilization data for 1, 3, 6, 12 months
+     * Convert months to days for precise date calculation
+     * @param {number} months - Number of months
+     * @returns {number} Number of days
      */
-    getDeviceUtilization(reservations) {
-        const timeframes = [1, 3, 6, 12];
-        const utilization = {};
+    monthsToDays(months) {
+        switch (months) {
+            case 1: return 30;   // 1 month = 30 days
+            case 3: return 90;   // 3 months = 90 days
+            case 6: return 180;  // 6 months = 180 days
+            case 12: return 365; // 12 months = 365 days
+            default: return months * 30; // Fallback
+        }
+    }
 
-        timeframes.forEach(months => {
-            const filteredReservations = this.filterByTimeframe(reservations, months);
-            utilization[`${months}months`] = this.calculateDeviceUtilizationForPeriod(filteredReservations);
-        });
+    /**
+     * Get device utilization (days of use) for the selected timeframe only
+     * @param {Reservation[]} reservations - Resolved reservations (already filtered by timeframe)
+     * @param {number} monthsBack - Selected timeframe in months
+     * @returns {Object} Device utilization data for the selected period
+     */
+    getDeviceUtilization(reservations, monthsBack) {
+        return {
+            selectedPeriod: this.calculateDeviceUtilizationForPeriod(reservations),
+            timeframe: monthsBack,
+            periodLabel: this.getTimeframeLabel(monthsBack)
+        };
+    }
 
-        return utilization;
+    /**
+     * Get human-readable label for timeframe
+     * @param {number} monthsBack - Number of months
+     * @returns {string} Human-readable label
+     */
+    getTimeframeLabel(monthsBack) {
+        if (monthsBack === 0) return 'All time';
+        if (monthsBack === 1) return 'Last 30 days';
+        if (monthsBack === 3) return 'Last 90 days';
+        if (monthsBack === 6) return 'Last 180 days';
+        if (monthsBack === 12) return 'Last 365 days';
+        return `Last ${monthsBack} months`;
     }
 
     /**

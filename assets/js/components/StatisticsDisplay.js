@@ -50,7 +50,6 @@ class StatisticsDisplay {
      */
     handleTimeframeChange() {
         const selectedMonths = parseInt(this.timeframeSelect.value);
-        console.log('Timeframe changed to:', selectedMonths, 'months');
         
         // Dispatch event to trigger statistics refresh
         const event = new CustomEvent('statisticsTimeframeChanged', {
@@ -89,9 +88,6 @@ class StatisticsDisplay {
     displayStatistics(statistics, timeframeInfo = null) {
         if (!this.statsContent) return;
 
-        console.log('Displaying statistics:', statistics);
-        console.log('Timeframe info:', timeframeInfo);
-
         this.showStatsContent();
         
         // Update timeframe information
@@ -126,8 +122,16 @@ class StatisticsDisplay {
         let timeframeText = '';
         if (monthsBack === 0) {
             timeframeText = 'All time';
+        } else if (monthsBack === 1) {
+            timeframeText = 'Last 30 days';
+        } else if (monthsBack === 3) {
+            timeframeText = 'Last 90 days';
+        } else if (monthsBack === 6) {
+            timeframeText = 'Last 180 days';
+        } else if (monthsBack === 12) {
+            timeframeText = 'Last 365 days';
         } else {
-            timeframeText = `Last ${monthsBack} month${monthsBack > 1 ? 's' : ''}`;
+            timeframeText = `Last ${monthsBack} months`;
         }
 
         let infoText = `Showing ${totalReservations.toLocaleString()} resolved reservations from ${timeframeText}`;
@@ -192,45 +196,52 @@ class StatisticsDisplay {
 
         // Insert at the beginning of stats content
         this.statsContent.insertBefore(summarySection, this.statsContent.firstChild);
-    }    /**
+    }
 
-     * Display device utilization for different timeframes
+    /**
+     * Display device utilization for the selected timeframe only
      * @param {Object} deviceUtilization - Device utilization data
      */
     displayDeviceUtilization(deviceUtilization) {
         const container = document.getElementById('deviceUtilizationChart');
         if (!container || !deviceUtilization) return;
 
-        const timeframes = ['1months', '3months', '6months', '12months'];
+        const { selectedPeriod, periodLabel } = deviceUtilization;
         
-        let html = '<div class="utilization-timeframes">';
+        if (!selectedPeriod) {
+            container.innerHTML = '<p class="no-data">No data available</p>';
+            return;
+        }
         
-        timeframes.forEach(timeframe => {
-            const months = timeframe.replace('months', '');
-            const data = deviceUtilization[timeframe];
+        let html = '<div class="single-timeframe-utilization">';
+        html += `<div class="timeframe-header">`;
+        html += `<h4>${periodLabel}</h4>`;
+        html += `</div>`;
+        
+        const regions = Object.keys(selectedPeriod);
+        if (regions.length === 0) {
+            html += '<p class="no-data">No data available for this period</p>';
+        } else {
+            html += '<div class="regions-grid">';
             
-            if (!data) return;
-            
-            html += `<div class="timeframe-section">`;
-            html += `<h4>${months} Month${months > 1 ? 's' : ''}</h4>`;
-            
-            const regions = Object.keys(data);
-            if (regions.length === 0) {
-                html += '<p class="no-data">No data available</p>';
-            } else {
-                regions.forEach(region => {
-                    const devices = Object.entries(data[region])
-                        .map(([device, stats]) => ({ device, ...stats }))
-                        .sort((a, b) => b.daysUsed - a.daysUsed)
-                        .slice(0, 5); // Top 5 per region
-                    
-                    html += `<div class="region-utilization">`;
-                    html += `<h5>${region}</h5>`;
+            regions.forEach(region => {
+                const devices = Object.entries(selectedPeriod[region])
+                    .map(([device, stats]) => ({ device, ...stats }))
+                    .sort((a, b) => b.daysUsed - a.daysUsed)
+                    .slice(0, 10); // Top 10 per region
+                
+                html += `<div class="region-utilization">`;
+                html += `<h5>${region}</h5>`;
+                
+                if (devices.length === 0) {
+                    html += '<p class="no-data-small">No devices used in this period</p>';
+                } else {
                     html += `<div class="device-list">`;
                     
-                    devices.forEach(device => {
+                    devices.forEach((device, index) => {
                         html += `
                             <div class="device-item">
+                                <span class="device-rank">${index + 1}</span>
                                 <span class="device-name">${device.device}</span>
                                 <span class="device-days">${device.daysUsed} days</span>
                                 <span class="device-reservations">(${device.reservationCount} reservations)</span>
@@ -238,12 +249,14 @@ class StatisticsDisplay {
                         `;
                     });
                     
-                    html += `</div></div>`;
-                });
-            }
+                    html += `</div>`;
+                }
+                
+                html += `</div>`;
+            });
             
-            html += `</div>`;
-        });
+            html += '</div>';
+        }
         
         html += '</div>';
         container.innerHTML = html;

@@ -71,7 +71,7 @@ class StatisticsService {
                     count: stats.count,
                     totalDays: stats.totalDays,
                     uniqueUsers: stats.users.size,
-                    avgDuration: Math.round(stats.totalDays / stats.count * 10) / 10
+                    avgDuration: Math.round(stats.totalDays / stats.count * 100) / 100
                 }))
                 .sort((a, b) => b.count - a.count)
                 .slice(0, CONFIG.STATS.TOP_ITEMS_LIMIT);
@@ -112,7 +112,7 @@ class StatisticsService {
                     reservationCount: data.reservations.length,
                     totalDays: uniqueDays,
                     uniqueDevices: data.devices.size,
-                    avgDuration: Math.round(uniqueDays / data.reservations.length * 10) / 10
+                    avgDuration: Math.round(uniqueDays / data.reservations.length * 100) / 100
                 };
             });
 

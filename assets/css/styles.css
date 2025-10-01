@@ -2493,7 +2493,7 @@ emote Hands Analytics Styles - Minimalist Grey Theme */
 emote Hands Analytics Styles */
 .remote-hands-summary-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 16px;
     margin-bottom: 24px;
 }

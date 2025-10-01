@@ -7,9 +7,10 @@ class RemoteHandsService {
     /**
      * Generate comprehensive remote hands analytics
      * @param {Reservation[]} reservations - Reservations to analyze
+     * @param {number} selectedMonths - Number of months selected for analysis
      * @returns {Object} Remote hands analytics object
      */
-    generateRemoteHandsAnalytics(reservations) {
+    generateRemoteHandsAnalytics(reservations, selectedMonths = 6) {
         const cacheKey = this.generateCacheKey(reservations);
         
         if (this.cache.has(cacheKey)) {
@@ -20,7 +21,7 @@ class RemoteHandsService {
         const cablingChangeReservations = this.getCablingChangeReservations(reservations);
 
         const analytics = {
-            capacityOverview: this.getCapacityOverview(cablingChangeReservations),
+            capacityOverview: this.getCapacityOverview(cablingChangeReservations, selectedMonths),
             deviceAnalysis: this.getDeviceAnalysis(cablingChangeReservations),
             userAnalysis: this.getUserAnalysis(cablingChangeReservations),
             summary: this.getSummary(cablingChangeReservations)
@@ -45,23 +46,25 @@ class RemoteHandsService {
     /**
      * Get capacity overview analytics
      * @param {Reservation[]} cablingReservations - Cabling change reservations
+     * @param {number} selectedMonths - Number of months selected for analysis
      * @returns {Object} Capacity overview data
      */
-    getCapacityOverview(cablingReservations) {
+    getCapacityOverview(cablingReservations, selectedMonths = 6) {
         const regionStats = {};
         const monthlyCapacity = CONFIG.REMOTE_HANDS.HOURS_PER_MONTH_PER_REGION;
 
-        // Calculate actual timeframe
-        let timeframeDays = 30; // Default to 1 month
+        // Use selected months for capacity calculation
+        const timeframeMonths = selectedMonths === 0 ? 12 : selectedMonths; // Default to 12 months for "all time"
+        const totalCapacityForTimeframe = monthlyCapacity * timeframeMonths;
+
+        // Calculate actual timeframe for display purposes
+        let actualTimeframeDays = 30 * timeframeMonths;
         if (cablingReservations.length > 0) {
             const dates = cablingReservations.map(r => r.startDate).sort((a, b) => a - b);
             const earliestDate = dates[0];
             const latestDate = dates[dates.length - 1];
-            timeframeDays = Math.ceil((latestDate - earliestDate) / (1000 * 60 * 60 * 24)) + 1;
+            actualTimeframeDays = Math.ceil((latestDate - earliestDate) / (1000 * 60 * 60 * 24)) + 1;
         }
-
-        const timeframeMonths = Math.max(1, timeframeDays / 30);
-        const totalCapacityForTimeframe = monthlyCapacity * timeframeMonths;
 
         // Group by region
         cablingReservations.forEach(reservation => {
@@ -86,7 +89,7 @@ class RemoteHandsService {
             hoursUsed: stats.hoursUsed,
             hoursAvailable: totalCapacityForTimeframe,
             changesCount: stats.changesCount,
-            utilizationRate: Math.round((stats.hoursUsed / totalCapacityForTimeframe) * 100 * 10) / 10,
+            utilizationRate: Math.round((stats.hoursUsed / totalCapacityForTimeframe) * 100 * 100) / 100,
             cost: stats.hoursUsed * CONFIG.REMOTE_HANDS.COST_PER_HOUR,
             status: this.getCapacityStatus(stats.hoursUsed / totalCapacityForTimeframe)
         }));
@@ -101,13 +104,14 @@ class RemoteHandsService {
             totals: {
                 hoursUsed: totalHoursUsed,
                 hoursAvailable: totalHoursAvailable,
-                utilizationRate: Math.round((totalHoursUsed / totalHoursAvailable) * 100 * 10) / 10,
+                utilizationRate: Math.round((totalHoursUsed / totalHoursAvailable) * 100 * 100) / 100,
                 cost: totalCost,
                 changesCount: cablingReservations.length
             },
             timeframe: {
-                days: timeframeDays,
-                months: timeframeMonths
+                days: actualTimeframeDays,
+                months: timeframeMonths,
+                selectedMonths: selectedMonths
             }
         };
     }
@@ -149,7 +153,7 @@ class RemoteHandsService {
             cost: stats.hoursUsed * CONFIG.REMOTE_HANDS.COST_PER_HOUR,
             regionsCount: stats.regions.size,
             usersCount: stats.users.size,
-            avgHoursPerChange: Math.round((stats.hoursUsed / stats.changesCount) * 10) / 10
+            avgHoursPerChange: Math.round((stats.hoursUsed / stats.changesCount) * 100) / 100
         }));
 
         return deviceAnalysis.sort((a, b) => b.hoursUsed - a.hoursUsed);
@@ -192,7 +196,7 @@ class RemoteHandsService {
             cost: stats.hoursUsed * CONFIG.REMOTE_HANDS.COST_PER_HOUR,
             regionsCount: stats.regions.size,
             devicesCount: stats.devices.size,
-            avgHoursPerChange: Math.round((stats.hoursUsed / stats.changesCount) * 10) / 10,
+            avgHoursPerChange: Math.round((stats.hoursUsed / stats.changesCount) * 100) / 100,
             efficiencyScore: this.calculateUserEfficiencyScore(stats)
         }));
 

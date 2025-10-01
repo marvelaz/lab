@@ -424,7 +424,7 @@ Status Breakdown:
             }
 
             // Generate remote hands analytics
-            const analytics = this.remoteHandsService.generateRemoteHandsAnalytics(statsData);
+            const analytics = this.remoteHandsService.generateRemoteHandsAnalytics(statsData, effectiveMonthsBack);
             
             // Check if there are any cabling changes
             if (analytics.summary.totalChanges === 0) {

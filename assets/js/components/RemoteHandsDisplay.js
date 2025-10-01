@@ -194,35 +194,47 @@ class RemoteHandsDisplay {
      * @param {Object} capacityData - Capacity overview data
      */
     displayCapacityOverview(capacityData) {
-        this.displayMonthlySummaryCards(capacityData.totals);
+        this.displayMonthlySummaryCards(capacityData.totals, capacityData.timeframe);
         this.displayRegionalCapacity(capacityData.regional);
         this.displayCapacityAlerts(capacityData.regional);
         this.displayWeeklyBreakdownChart(capacityData);
     }
 
     /**
-     * Display monthly summary cards
+     * Display monthly summary cards with monthly averages
      * @param {Object} totals - Total statistics
+     * @param {Object} timeframe - Timeframe information
      */
-    displayMonthlySummaryCards(totals) {
+    displayMonthlySummaryCards(totals, timeframe = null) {
         const container = document.getElementById('monthlySummaryCards');
         if (!container) return;
+
+        // Calculate monthly averages
+        const monthsInTimeframe = timeframe ? timeframe.selectedMonths || timeframe.months : 1;
+        const monthlyAvgHours = Math.round((totals.hoursUsed / monthsInTimeframe) * 100) / 100;
+        const monthlyAvgCost = Math.round((totals.cost / monthsInTimeframe) * 100) / 100;
+        const monthlyAvgChanges = Math.round((totals.changesCount / monthsInTimeframe) * 100) / 100;
 
         const cards = [
             {
                 value: `${totals.hoursUsed}/${totals.hoursAvailable}`,
-                label: 'Hours Used',
+                label: 'Total Hours Used',
                 subtitle: `${totals.utilizationRate}% utilization`
             },
             {
                 value: `$${totals.cost.toLocaleString()}`,
                 label: 'Total Cost',
-                subtitle: `${totals.changesCount} changes`
+                subtitle: `$${monthlyAvgCost.toLocaleString()}/month avg`
             },
             {
                 value: totals.changesCount,
-                label: 'Cabling Changes',
-                subtitle: `${CONFIG.REMOTE_HANDS.CABLING_CHANGE_HOURS} hr each`
+                label: 'Total Changes',
+                subtitle: `${monthlyAvgChanges}/month avg`
+            },
+            {
+                value: `${monthlyAvgHours} hrs`,
+                label: 'Monthly Average',
+                subtitle: `Over ${monthsInTimeframe} month${monthsInTimeframe > 1 ? 's' : ''}`
             }
         ];
 
@@ -518,7 +530,7 @@ class RemoteHandsDisplay {
                     <div class="region-name">${region.region}</div>
                     <div class="user-activity-stats">
                         <span>${region.changesCount} changes</span>
-                        <span>${Math.round(avgHoursPerUser * 10) / 10} avg hrs/change</span>
+                        <span>${Math.round(avgHoursPerUser * 100) / 100} avg hrs/change</span>
                     </div>
                 </div>
             `;
@@ -546,7 +558,7 @@ class RemoteHandsDisplay {
         const container = document.getElementById('weeklyBreakdownChart');
         if (!container) return;
         
-        const weeklyAvg = Math.round(capacityData.totals.hoursUsed / 4 * 10) / 10;
+        const weeklyAvg = Math.round(capacityData.totals.hoursUsed / 4 * 100) / 100;
         
         container.innerHTML = `
             <div class="weekly-breakdown">

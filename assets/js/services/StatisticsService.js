@@ -27,7 +27,7 @@ class StatisticsService {
 
         const statistics = {
             deviceUtilization: this.getDeviceUtilization(filteredReservations, monthsBack),
-            utilizationHeatmap: this.getSimpleHeatmap(filteredReservations),
+            utilizationHeatmap: this.getMonthlyConflictPatterns(reservations), // Pass all reservations, not filtered
             conflictAnalysis: this.getSimpleConflicts(this.getConflictRelevantReservations(reservations, monthsBack)),
             efficiencyMetrics: this.getSimpleEfficiency(filteredReservations),
             topUsers: this.getTopUsers(filteredReservations, monthsBack),
@@ -411,6 +411,91 @@ class StatisticsService {
      */
     clearCache() {
         this.cache.clear();
+    }
+
+    /**
+     * Get monthly conflict patterns over the last 365 days
+     * @param {Reservation[]} allReservations - All reservations (not filtered by timeframe)
+     * @returns {Object} Monthly conflict data for the last 365 days
+     */
+    getMonthlyConflictPatterns(allReservations) {
+        // Always use last 365 days regardless of selected timeframe
+        const now = new Date();
+        const oneYearAgo = new Date(now.getTime() - (365 * 24 * 60 * 60 * 1000));
+
+        // Filter reservations to last 365 days (any reservation that overlaps with this period)
+        const relevantReservations = allReservations.filter(reservation => {
+            return reservation.startDate <= now && reservation.endDate >= oneYearAgo;
+        });
+
+        // Generate monthly buckets for the last 12 months
+        const monthlyData = [];
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        for (let i = 11; i >= 0; i--) {
+            const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+
+            // Get reservations that overlap with this month
+            const monthReservations = relevantReservations.filter(reservation => {
+                return reservation.startDate <= monthEnd && reservation.endDate >= monthStart;
+            });
+
+            // Count conflicts for this month
+            const conflicts = this.countConflictsInPeriod(monthReservations);
+
+            monthlyData.push({
+                month: monthNames[monthStart.getMonth()],
+                year: monthStart.getFullYear(),
+                conflicts: conflicts,
+                label: `${monthNames[monthStart.getMonth()]} ${monthStart.getFullYear()}`
+            });
+        }
+
+        // Find peak and low months
+        const peakMonth = monthlyData.reduce((max, month) =>
+            month.conflicts > max.conflicts ? month : max);
+        const lowMonth = monthlyData.reduce((min, month) =>
+            month.conflicts < min.conflicts ? month : min);
+
+        return {
+            monthlyConflicts: monthlyData,
+            peakMonth: peakMonth,
+            lowMonth: lowMonth,
+            totalConflicts: monthlyData.reduce((sum, month) => sum + month.conflicts, 0)
+        };
+    }
+
+    /**
+     * Count conflicts within a set of reservations
+     * @param {Reservation[]} reservations - Reservations to analyze
+     * @returns {number} Number of conflict pairs
+     */
+    countConflictsInPeriod(reservations) {
+        let conflictCount = 0;
+        const processedPairs = new Set();
+
+        for (let i = 0; i < reservations.length; i++) {
+            for (let j = i + 1; j < reservations.length; j++) {
+                const res1 = reservations[i];
+                const res2 = reservations[j];
+
+                // Create unique pair identifier
+                const pairId = [res1.id, res2.id].sort().join('-');
+                if (processedPairs.has(pairId)) continue;
+                processedPairs.add(pairId);
+
+                // Check if they conflict (same device, same region, overlapping dates)
+                if (res1.device === res2.device &&
+                    res1.labRegion === res2.labRegion &&
+                    res1.startDate <= res2.endDate && res2.startDate <= res1.endDate) {
+                    conflictCount++;
+                }
+            }
+        }
+
+        return conflictCount;
     }
 
     /**

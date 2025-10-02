@@ -392,39 +392,46 @@ class StatisticsDisplay {
     }
 
     /**
-     * Display utilization heatmap
-     * @param {Object} heatmapData - Heatmap data
+     * Display monthly conflict patterns (last 365 days)
+     * @param {Object} conflictData - Monthly conflict data
      */
-    displayUtilizationHeatmap(heatmapData) {
+    displayUtilizationHeatmap(conflictData) {
         const container = document.getElementById('utilizationHeatmap');
-        if (!container || !heatmapData) {
-            console.log('Heatmap container or data missing:', !!container, !!heatmapData);
+        if (!container || !conflictData) {
+            console.log('Conflict patterns container or data missing:', !!container, !!conflictData);
             return;
         }
 
-        const { weekdayPatterns, peakDay, lowDay } = heatmapData;
+        const { monthlyConflicts, peakMonth, lowMonth, totalConflicts } = conflictData;
 
-        let html = '<div class="heatmap-summary">';
+        let html = '<div class="conflict-patterns-summary">';
         html += '<div class="insight-box">';
-        html += '<div class="insight-item">📈 <strong>Peak:</strong> ' + peakDay.day + ' (' + peakDay.avgUtilization + '%)</div>';
-        html += '<div class="insight-item">📉 <strong>Low:</strong> ' + lowDay.day + ' (' + lowDay.avgUtilization + '%)</div>';
+        html += '<div class="insight-item">📈 <strong>Peak:</strong> ' + peakMonth.label + ' (' + peakMonth.conflicts + ' conflicts)</div>';
+        html += '<div class="insight-item">📉 <strong>Low:</strong> ' + lowMonth.label + ' (' + lowMonth.conflicts + ' conflicts)</div>';
+        html += '<div class="insight-item">📊 <strong>Total:</strong> ' + totalConflicts + ' conflicts in last 365 days</div>';
         html += '</div>';
         html += '</div>';
 
-        html += '<div class="weekday-chart">';
-        weekdayPatterns.forEach(day => {
-            const barHeight = Math.max(day.avgUtilization, 5);
-            const colorClass = day.avgUtilization >= 70 ? 'high' : day.avgUtilization >= 40 ? 'medium' : 'low';
+        // Find max conflicts for scaling
+        const maxConflicts = Math.max(...monthlyConflicts.map(m => m.conflicts), 1);
+
+        html += '<div class="monthly-chart">';
+        monthlyConflicts.forEach(month => {
+            const barHeight = Math.max((month.conflicts / maxConflicts) * 100, 5);
+            const colorClass = month.conflicts >= maxConflicts * 0.7 ? 'high' : 
+                              month.conflicts >= maxConflicts * 0.4 ? 'medium' : 'low';
             
-            html += '<div class="weekday-bar">';
+            html += '<div class="monthly-bar">';
             html += '<div class="bar-container">';
             html += '<div class="bar ' + colorClass + '" style="height: ' + barHeight + '%"></div>';
             html += '</div>';
-            html += '<div class="bar-label">' + day.day.substring(0, 3) + '</div>';
-            html += '<div class="bar-value">' + day.avgUtilization + '%</div>';
+            html += '<div class="bar-label">' + month.month + '</div>';
+            html += '<div class="bar-value">' + month.conflicts + '</div>';
             html += '</div>';
         });
         html += '</div>';
+
+        html += '<div class="chart-note">Shows conflict pairs detected over the last 365 days, independent of selected timeframe</div>';
 
         container.innerHTML = html;
     }

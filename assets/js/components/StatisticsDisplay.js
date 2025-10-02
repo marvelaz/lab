@@ -390,38 +390,39 @@ class StatisticsDisplay {
         
         this.showNoDataMessage();
     }
-}  
-  /**
+
+    /**
      * Display utilization heatmap
      * @param {Object} heatmapData - Heatmap data
      */
     displayUtilizationHeatmap(heatmapData) {
         const container = document.getElementById('utilizationHeatmap');
-        if (!container || !heatmapData) return;
+        if (!container || !heatmapData) {
+            console.log('Heatmap container or data missing:', !!container, !!heatmapData);
+            return;
+        }
 
         const { weekdayPatterns, peakDay, lowDay } = heatmapData;
 
         let html = '<div class="heatmap-summary">';
-        html += `<div class="insight-box">`;
-        html += `<div class="insight-item">📈 <strong>Peak:</strong> ${peakDay.day} (${peakDay.avgUtilization}%)</div>`;
-        html += `<div class="insight-item">📉 <strong>Low:</strong> ${lowDay.day} (${lowDay.avgUtilization}%)</div>`;
-        html += `</div>`;
+        html += '<div class="insight-box">';
+        html += '<div class="insight-item">📈 <strong>Peak:</strong> ' + peakDay.day + ' (' + peakDay.avgUtilization + '%)</div>';
+        html += '<div class="insight-item">📉 <strong>Low:</strong> ' + lowDay.day + ' (' + lowDay.avgUtilization + '%)</div>';
+        html += '</div>';
         html += '</div>';
 
         html += '<div class="weekday-chart">';
         weekdayPatterns.forEach(day => {
-            const barHeight = Math.max(day.avgUtilization, 5); // Minimum 5% for visibility
+            const barHeight = Math.max(day.avgUtilization, 5);
             const colorClass = day.avgUtilization >= 70 ? 'high' : day.avgUtilization >= 40 ? 'medium' : 'low';
             
-            html += `
-                <div class="weekday-bar">
-                    <div class="bar-container">
-                        <div class="bar ${colorClass}" style="height: ${barHeight}%"></div>
-                    </div>
-                    <div class="bar-label">${day.day.substring(0, 3)}</div>
-                    <div class="bar-value">${day.avgUtilization}%</div>
-                </div>
-            `;
+            html += '<div class="weekday-bar">';
+            html += '<div class="bar-container">';
+            html += '<div class="bar ' + colorClass + '" style="height: ' + barHeight + '%"></div>';
+            html += '</div>';
+            html += '<div class="bar-label">' + day.day.substring(0, 3) + '</div>';
+            html += '<div class="bar-value">' + day.avgUtilization + '%</div>';
+            html += '</div>';
         });
         html += '</div>';
 
@@ -434,33 +435,34 @@ class StatisticsDisplay {
      */
     displayConflictAnalysis(conflictData) {
         const container = document.getElementById('conflictAnalysis');
-        if (!container || !conflictData) return;
+        if (!container || !conflictData) {
+            console.log('Conflict container or data missing:', !!container, !!conflictData);
+            return;
+        }
 
         const { totalConflicts, topBottlenecks, recommendations } = conflictData;
 
         let html = '<div class="conflict-summary">';
-        html += `<div class="metric-highlight">`;
-        html += `<span class="metric-number">${totalConflicts}</span>`;
-        html += `<span class="metric-label">Total Conflicts</span>`;
-        html += `</div>`;
+        html += '<div class="metric-highlight">';
+        html += '<span class="metric-number">' + totalConflicts + '</span>';
+        html += '<span class="metric-label">Total Conflicts</span>';
+        html += '</div>';
         html += '</div>';
 
         if (topBottlenecks.length > 0) {
             html += '<div class="bottleneck-list">';
-            topBottlenecks.slice(0, 5).forEach((bottleneck, index) => {
+            topBottlenecks.slice(0, 5).forEach((bottleneck) => {
                 const severity = bottleneck.conflicts >= 5 ? 'high' : bottleneck.conflicts >= 3 ? 'medium' : 'low';
-                html += `
-                    <div class="bottleneck-item ${severity}">
-                        <div class="bottleneck-info">
-                            <div class="device-name">${bottleneck.device}</div>
-                            <div class="region-name">${bottleneck.region}</div>
-                        </div>
-                        <div class="conflict-stats">
-                            <span class="conflict-count">${bottleneck.conflicts}</span>
-                            <span class="impact-days">${bottleneck.impactDays} days impact</span>
-                        </div>
-                    </div>
-                `;
+                html += '<div class="bottleneck-item ' + severity + '">';
+                html += '<div class="bottleneck-info">';
+                html += '<div class="device-name">' + bottleneck.device + '</div>';
+                html += '<div class="region-name">' + bottleneck.region + '</div>';
+                html += '</div>';
+                html += '<div class="conflict-stats">';
+                html += '<span class="conflict-count">' + bottleneck.conflicts + '</span>';
+                html += '<span class="impact-days">conflicts</span>';
+                html += '</div>';
+                html += '</div>';
             });
             html += '</div>';
         } else {
@@ -471,7 +473,7 @@ class StatisticsDisplay {
             html += '<div class="recommendations">';
             html += '<h4>💡 Recommendations</h4>';
             recommendations.forEach(rec => {
-                html += `<div class="recommendation-item">• ${rec}</div>`;
+                html += '<div class="recommendation-item">• ' + rec + '</div>';
             });
             html += '</div>';
         }
@@ -485,7 +487,10 @@ class StatisticsDisplay {
      */
     displayEfficiencyMetrics(efficiencyData) {
         const container = document.getElementById('efficiencyMetrics');
-        if (!container || !efficiencyData) return;
+        if (!container || !efficiencyData) {
+            console.log('Efficiency container or data missing:', !!container, !!efficiencyData);
+            return;
+        }
 
         const { 
             avgBookingLeadTime, 
@@ -498,31 +503,29 @@ class StatisticsDisplay {
         let html = '<div class="efficiency-metrics">';
         
         html += '<div class="metrics-grid">';
-        html += `
-            <div class="metric-item">
-                <div class="metric-value">${avgBookingLeadTime}</div>
-                <div class="metric-label">Avg Lead Time (days)</div>
-            </div>
-            <div class="metric-item">
-                <div class="metric-value">${avgActualDuration}</div>
-                <div class="metric-label">Avg Duration (days)</div>
-            </div>
-            <div class="metric-item">
-                <div class="metric-value">${earlyTerminationRate}%</div>
-                <div class="metric-label">Early Terminations</div>
-            </div>
-            <div class="metric-item">
-                <div class="metric-value">${lastMinuteBookingRate}%</div>
-                <div class="metric-label">Last-minute Bookings</div>
-            </div>
-        `;
+        html += '<div class="metric-item">';
+        html += '<div class="metric-value">' + avgBookingLeadTime + '</div>';
+        html += '<div class="metric-label">Avg Lead Time (days)</div>';
+        html += '</div>';
+        html += '<div class="metric-item">';
+        html += '<div class="metric-value">' + avgActualDuration + '</div>';
+        html += '<div class="metric-label">Avg Duration (days)</div>';
+        html += '</div>';
+        html += '<div class="metric-item">';
+        html += '<div class="metric-value">' + earlyTerminationRate + '%</div>';
+        html += '<div class="metric-label">Short Bookings</div>';
+        html += '</div>';
+        html += '<div class="metric-item">';
+        html += '<div class="metric-value">' + lastMinuteBookingRate + '%</div>';
+        html += '<div class="metric-label">Estimated Last-minute</div>';
+        html += '</div>';
         html += '</div>';
 
         if (efficiencyOpportunities.length > 0) {
             html += '<div class="opportunities">';
             html += '<h4>🎯 Opportunities</h4>';
             efficiencyOpportunities.forEach(opp => {
-                html += `<div class="opportunity-item">• ${opp}</div>`;
+                html += '<div class="opportunity-item">• ' + opp + '</div>';
             });
             html += '</div>';
         }
@@ -530,3 +533,4 @@ class StatisticsDisplay {
         html += '</div>';
         container.innerHTML = html;
     }
+}

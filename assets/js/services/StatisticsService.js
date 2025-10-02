@@ -322,21 +322,7 @@ class StatisticsService {
         const timeframeStart = monthsBack > 0 ? new Date(now.getTime() - (this.monthsToDays(monthsBack) * 24 * 60 * 60 * 1000)) : null;
         const timeframeEnd = now;
 
-        // Debug logging for first few calculations
-        if (reservations.length > 0 && reservations[0].device && reservations[0].device.includes('US01-FG-701G')) {
-            console.log('Debug timeframe calculation:', {
-                device: reservations[0].device,
-                monthsBack,
-                now: now.toISOString(),
-                timeframeStart: timeframeStart ? timeframeStart.toISOString() : 'null',
-                timeframeEnd: timeframeEnd.toISOString(),
-                reservationCount: reservations.length,
-                sampleReservation: {
-                    start: reservations[0].startDate.toISOString(),
-                    end: reservations[0].endDate.toISOString()
-                }
-            });
-        }
+
 
         // Convert reservations to date ranges and clip to timeframe
         const dateRanges = reservations.map(r => {
@@ -345,10 +331,10 @@ class StatisticsService {
             
             // Clip to timeframe if specified
             if (timeframeStart) {
+                // Only clip start date to timeframe start (don't clip end date to "today")
                 start = new Date(Math.max(start.getTime(), timeframeStart.getTime()));
-                end = new Date(Math.min(end.getTime(), timeframeEnd.getTime()));
                 
-                // Skip if reservation is completely outside timeframe
+                // Skip if reservation starts after its end date (invalid)
                 if (start > end) return null;
             }
             
@@ -382,18 +368,7 @@ class StatisticsService {
             totalDays += days;
         });
 
-        // Debug logging for problematic cases
-        if (reservations.length > 0 && reservations[0].device && reservations[0].device.includes('US01-FG-701G')) {
-            console.log('Debug clipped calculation result:', {
-                device: reservations[0].device,
-                totalDays,
-                mergedRanges: mergedRanges.map(r => ({
-                    start: r.start.toISOString(),
-                    end: r.end.toISOString(),
-                    days: Math.ceil((r.end - r.start) / (1000 * 60 * 60 * 24)) + 1
-                }))
-            });
-        }
+
 
         return totalDays;
     }

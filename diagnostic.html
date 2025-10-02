@@ -152,9 +152,9 @@
                 const endDate = new Date(testCase.end);
                 const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
 
-                // Clip to timeframe
+                // Clip to timeframe (FIXED VERSION)
                 const clippedStart = new Date(Math.max(startDate.getTime(), thirtyDaysAgo.getTime()));
-                const clippedEnd = new Date(Math.min(endDate.getTime(), now.getTime()));
+                const clippedEnd = endDate; // Don't clip end date to "today" 
                 const clippedDays = clippedEnd > clippedStart ? Math.ceil((clippedEnd - clippedStart) / (1000 * 60 * 60 * 24)) + 1 : 0;
 
                 html += `

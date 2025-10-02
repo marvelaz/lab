@@ -331,10 +331,11 @@ class StatisticsService {
             
             // Clip to timeframe if specified
             if (timeframeStart) {
-                // Only clip start date to timeframe start (don't clip end date to "today")
+                // Clip both start and end dates to timeframe boundaries
                 start = new Date(Math.max(start.getTime(), timeframeStart.getTime()));
+                end = new Date(Math.min(end.getTime(), timeframeEnd.getTime()));
                 
-                // Skip if reservation starts after its end date (invalid)
+                // Skip if reservation is completely outside timeframe
                 if (start > end) return null;
             }
             

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Statistics Interpretation Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .comparison { display: flex; gap: 20px; }
+        .option { flex: 1; padding: 15px; border: 2px solid #ccc; border-radius: 8px; }
+        .option.current { border-color: #007bff; background: #f0f8ff; }
+        .option.alternative { border-color: #28a745; background: #f0fff0; }
+        .example { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Statistics Interpretation: "Last 30 Days"</h1>
+    
+    <div class="comparison">
+        <div class="option current">
+            <h2>🔵 Option A: Full Duration (Current)</h2>
+            <p><strong>Logic:</strong> Show complete duration of reservations that START within timeframe</p>
+            
+            <div class="example">
+                <h4>Example: Reservation 9/5/2025 to 10/15/2025</h4>
+                <p>✅ Starts within last 30 days (Sep 5 > Sep 1)</p>
+                <p>📊 Shows: <strong>41 days</strong> (full duration)</p>
+                <p>💭 Reasoning: "This device was reserved for 41 days total"</p>
+            </div>
+            
+            <h4>Pros:</h4>
+            <ul>
+                <li>Shows actual reservation durations</li>
+                <li>Useful for capacity planning</li>
+                <li>Clear business logic</li>
+            </ul>
+            
+            <h4>Cons:</h4>
+            <ul>
+                <li>Can show > 30 days for "Last 30 days"</li>
+                <li>Might be confusing to users</li>
+            </ul>
+        </div>
+        
+        <div class="option alternative">
+            <h2>🟢 Option B: Clipped Duration (Alternative)</h2>
+            <p><strong>Logic:</strong> Only count days that fall within the selected timeframe</p>
+            
+            <div class="example">
+                <h4>Example: Reservation 9/5/2025 to 10/15/2025</h4>
+                <p>✅ Starts within last 30 days (Sep 5 > Sep 1)</p>
+                <p>📊 Shows: <strong>27 days</strong> (Sep 5 to Oct 1 only)</p>
+                <p>💭 Reasoning: "This device was used for 27 days within the timeframe"</p>
+            </div>
+            
+            <h4>Pros:</h4>
+            <ul>
+                <li>Never exceeds selected timeframe</li>
+                <li>Intuitive for users</li>
+                <li>Consistent with timeframe selection</li>
+            </ul>
+            
+            <h4>Cons:</h4>
+            <ul>
+                <li>Doesn't show full reservation impact</li>
+                <li>May underestimate actual usage</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div style="margin-top: 30px; padding: 20px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px;">
+        <h3>🤔 Which Makes More Sense?</h3>
+        <p><strong>Question:</strong> When you select "Last 30 days", what do you expect to see?</p>
+        <ol>
+            <li><strong>Full durations</strong> of reservations that started in the last 30 days? (Current)</li>
+            <li><strong>Only the portion</strong> of reservations that falls within the last 30 days? (Alternative)</li>
+        </ol>
+        
+        <p><strong>Real Example from your data:</strong></p>
+        <p>Device "US-FGT-101F-A" reserved from 9/5/2025 to 10/15/2025 (41 days total)</p>
+        <ul>
+            <li><strong>Option A:</strong> Shows 41 days (full reservation)</li>
+            <li><strong>Option B:</strong> Shows 27 days (only Sep 5 to Oct 1)</li>
+        </ul>
+    </div>
+    
+    <script>
+        // Calculate the actual numbers for the example
+        const reservationStart = new Date('9/5/2025');
+        const reservationEnd = new Date('10/15/2025');
+        const timeframeStart = new Date('9/1/2025'); // 30 days ago from Oct 1
+        const timeframeEnd = new Date('10/1/2025'); // Today
+        
+        const fullDays = Math.ceil((reservationEnd - reservationStart) / (1000 * 60 * 60 * 24)) + 1;
+        const clippedEnd = new Date(Math.min(reservationEnd.getTime(), timeframeEnd.getTime()));
+        const clippedDays = Math.ceil((clippedEnd - reservationStart) / (1000 * 60 * 60 * 24)) + 1;
+        
+        console.log('Calculation verification:');
+        console.log('Full days:', fullDays);
+        console.log('Clipped days:', clippedDays);
+        console.log('Clipped range:', reservationStart.toDateString(), 'to', clippedEnd.toDateString());
+    </script>
+</body>
+</html>

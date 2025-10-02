@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Statistics Diagnostic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .debug-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .warning {
+            color: orange;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Lab Reservation Statistics Diagnostic</h1>
+
+    <div class="debug-section">
+        <h2>Current System Information</h2>
+        <div id="systemInfo"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>CSV Data Analysis</h2>
+        <input type="file" id="csvFile" accept=".csv" />
+        <button onclick="analyzeCsv()">Analyze CSV</button>
+        <div id="csvAnalysis"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>Date Calculation Test</h2>
+        <div id="dateTest"></div>
+    </div>
+
+    <script>
+        // Display system information
+        function displaySystemInfo() {
+            const now = new Date();
+            const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+
+            document.getElementById('systemInfo').innerHTML = `
+                <p><strong>Current Date:</strong> ${now.toISOString()} (${now.toDateString()})</p>
+                <p><strong>30 Days Ago:</strong> ${thirtyDaysAgo.toISOString()} (${thirtyDaysAgo.toDateString()})</p>
+                <p><strong>Timezone:</strong> ${Intl.DateTimeFormat().resolvedOptions().timeZone}</p>
+                <p><strong>User Agent:</strong> ${navigator.userAgent}</p>
+            `;
+        }
+
+        // Analyze CSV data
+        function analyzeCsv() {
+            const fileInput = document.getElementById('csvFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Please select a CSV file');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const csv = e.target.result;
+                const lines = csv.split('\\n');
+                const headers = lines[0].split(',').map(h => h.replace(/"/g, ''));
+
+                let analysis = `<h3>CSV Structure</h3>`;
+                analysis += `<p><strong>Total Lines:</strong> ${lines.length}</p>`;
+                analysis += `<p><strong>Headers:</strong> ${headers.join(', ')}</p>`;
+
+                // Analyze first few data rows
+                analysis += `<h3>Sample Data Analysis</h3>`;
+                const now = new Date();
+                const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+
+                for (let i = 1; i <= Math.min(10, lines.length - 1); i++) {
+                    const row = lines[i].split(',').map(cell => cell.replace(/"/g, ''));
+                    if (row.length < headers.length) continue;
+
+                    const startDateStr = row[headers.indexOf('Start Date')];
+                    const endDateStr = row[headers.indexOf('End Date')];
+                    const status = row[headers.indexOf('Status')];
+                    const device = row[headers.indexOf('Device')];
+
+                    const startDate = new Date(startDateStr);
+                    const endDate = new Date(endDateStr);
+                    const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+                    // Check if reservation starts within last 30 days
+                    const startsInTimeframe = startDate >= thirtyDaysAgo;
+
+                    // Calculate clipped days
+                    let clippedDays = 0;
+                    if (startsInTimeframe) {
+                        const clippedStart = new Date(Math.max(startDate.getTime(), thirtyDaysAgo.getTime()));
+                        const clippedEnd = new Date(Math.min(endDate.getTime(), now.getTime()));
+                        clippedDays = clippedEnd > clippedStart ? Math.ceil((clippedEnd - clippedStart) / (1000 * 60 * 60 * 24)) + 1 : 0;
+                    }
+
+                    const statusClass = status === 'resolved' ? 'success' : 'warning';
+                    const timeframeClass = startsInTimeframe ? 'success' : 'error';
+
+                    analysis += `
+                        <div style="margin: 10px 0; padding: 10px; border: 1px solid #eee;">
+                            <p><strong>Device:</strong> ${device}</p>
+                            <p><strong>Dates:</strong> ${startDateStr} to ${endDateStr}</p>
+                            <p><strong>Status:</strong> <span class="${statusClass}">${status}</span></p>
+                            <p><strong>In Timeframe:</strong> <span class="${timeframeClass}">${startsInTimeframe ? 'Yes' : 'No'}</span></p>
+                            <p><strong>Total Days:</strong> ${totalDays}</p>
+                            <p><strong>Clipped Days:</strong> ${clippedDays}</p>
+                        </div>
+                    `;
+                }
+
+                document.getElementById('csvAnalysis').innerHTML = analysis;
+            };
+
+            reader.readAsText(file);
+        }
+
+        // Test date calculations
+        function testDateCalculations() {
+            const testCases = [
+                { start: "10/1/2025", end: "10/6/2025" },
+                { start: "9/15/2025", end: "11/15/2025" },
+                { start: "9/30/2025", end: "10/14/2025" }
+            ];
+
+            const now = new Date();
+            const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+
+            let html = '<h3>Date Calculation Tests</h3>';
+
+            testCases.forEach((testCase, index) => {
+                const startDate = new Date(testCase.start);
+                const endDate = new Date(testCase.end);
+                const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+                // Clip to timeframe
+                const clippedStart = new Date(Math.max(startDate.getTime(), thirtyDaysAgo.getTime()));
+                const clippedEnd = new Date(Math.min(endDate.getTime(), now.getTime()));
+                const clippedDays = clippedEnd > clippedStart ? Math.ceil((clippedEnd - clippedStart) / (1000 * 60 * 60 * 24)) + 1 : 0;
+
+                html += `
+                    <div style="margin: 10px 0; padding: 10px; border: 1px solid #eee;">
+                        <p><strong>Test ${index + 1}:</strong> ${testCase.start} to ${testCase.end}</p>
+                        <p><strong>Total Days:</strong> ${totalDays}</p>
+                        <p><strong>Clipped Days:</strong> ${clippedDays}</p>
+                        <p><strong>Clipped Range:</strong> ${clippedStart.toDateString()} to ${clippedEnd.toDateString()}</p>
+                    </div>
+                `;
+            });
+
+            document.getElementById('dateTest').innerHTML = html;
+        }
+
+        // Initialize
+        displaySystemInfo();
+        testDateCalculations();
+    </script>
+</body>
+
+</html>

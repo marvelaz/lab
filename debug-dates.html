@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Date Debug Test</title>
+</head>
+<body>
+    <h1>Date Parsing Debug</h1>
+    <div id="output"></div>
+
+    <script>
+        // Test date parsing from your CSV format
+        const testDates = [
+            "10/1/2025",
+            "10/6/2025", 
+            "9/30/2025",
+            "10/14/2025"
+        ];
+
+        const output = document.getElementById('output');
+        let html = '<h2>Date Parsing Test</h2>';
+
+        testDates.forEach(dateStr => {
+            const parsed = new Date(dateStr);
+            html += `<p><strong>${dateStr}</strong> → ${parsed.toISOString()} (${parsed.toDateString()})</p>`;
+        });
+
+        // Test timeframe calculation
+        const now = new Date();
+        const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+        
+        html += '<h2>Timeframe Test</h2>';
+        html += `<p><strong>Now:</strong> ${now.toISOString()}</p>`;
+        html += `<p><strong>30 days ago:</strong> ${thirtyDaysAgo.toISOString()}</p>`;
+
+        // Test a reservation that spans beyond timeframe
+        const reservationStart = new Date("10/1/2025");
+        const reservationEnd = new Date("11/15/2025"); // 45 days total
+        const totalDays = Math.ceil((reservationEnd - reservationStart) / (1000 * 60 * 60 * 24)) + 1;
+        
+        // Clip to timeframe (assuming we're in October 2025)
+        const timeframeEnd = now;
+        const clippedEnd = new Date(Math.min(reservationEnd.getTime(), timeframeEnd.getTime()));
+        const clippedStart = new Date(Math.max(reservationStart.getTime(), thirtyDaysAgo.getTime()));
+        const clippedDays = clippedEnd > clippedStart ? Math.ceil((clippedEnd - clippedStart) / (1000 * 60 * 60 * 24)) + 1 : 0;
+
+        html += '<h2>Reservation Clipping Test</h2>';
+        html += `<p><strong>Reservation:</strong> ${reservationStart.toDateString()} to ${reservationEnd.toDateString()}</p>`;
+        html += `<p><strong>Total days:</strong> ${totalDays}</p>`;
+        html += `<p><strong>Clipped start:</strong> ${clippedStart.toDateString()}</p>`;
+        html += `<p><strong>Clipped end:</strong> ${clippedEnd.toDateString()}</p>`;
+        html += `<p><strong>Clipped days:</strong> ${clippedDays}</p>`;
+
+        output.innerHTML = html;
+    </script>
+</body>
+</html>

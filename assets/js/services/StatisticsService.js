@@ -27,8 +27,8 @@ class StatisticsService {
 
         const statistics = {
             deviceUtilization: this.getDeviceUtilization(filteredReservations, monthsBack),
-            topDevicesByRegion: this.getTopDevicesByRegion(filteredReservations),
-            topUsers: this.getTopUsers(filteredReservations),
+            topDevicesByRegion: this.getTopDevicesByRegion(filteredReservations, monthsBack),
+            topUsers: this.getTopUsers(filteredReservations, monthsBack),
             summary: this.getStatisticsSummary(filteredReservations, monthsBack)
         };
 
@@ -78,7 +78,7 @@ class StatisticsService {
      */
     getDeviceUtilization(reservations, monthsBack) {
         return {
-            selectedPeriod: this.calculateDeviceUtilizationForPeriod(reservations),
+            selectedPeriod: this.calculateDeviceUtilizationForPeriod(reservations, monthsBack),
             timeframe: monthsBack,
             periodLabel: this.getTimeframeLabel(monthsBack)
         };
@@ -101,9 +101,10 @@ class StatisticsService {
     /**
      * Calculate device utilization for a specific period
      * @param {Reservation[]} reservations - Reservations for the period
+     * @param {number} monthsBack - Selected timeframe in months (for clipping)
      * @returns {Object} Device utilization by region
      */
-    calculateDeviceUtilizationForPeriod(reservations) {
+    calculateDeviceUtilizationForPeriod(reservations, monthsBack) {
         const deviceStats = {};
 
         // Group by region and device
@@ -122,13 +123,13 @@ class StatisticsService {
             deviceStats[region][device].push(reservation);
         });
 
-        // Calculate unique days used (handling overlaps)
+        // Calculate unique days used (handling overlaps and clipping to timeframe)
         const result = {};
         Object.keys(deviceStats).forEach(region => {
             result[region] = {};
             Object.keys(deviceStats[region]).forEach(device => {
                 const deviceReservations = deviceStats[region][device];
-                const uniqueDays = this.calculateUniqueDaysUsed(deviceReservations);
+                const uniqueDays = this.calculateUniqueDaysUsedWithinTimeframe(deviceReservations, monthsBack);
                 
                 result[region][device] = {
                     daysUsed: uniqueDays,
@@ -141,11 +142,12 @@ class StatisticsService {
     }
 
     /**
-     * Get top 10 devices by region (sorted by days used)
-     * @param {Reservation[]} reservations - Reservations to analyze
+     * Get top 10 devices by region (sorted by days used within timeframe)
+     * @param {Reservation[]} reservations - Reservations to analyze (already filtered by timeframe)
+     * @param {number} monthsBack - Selected timeframe for clipping calculations
      * @returns {Object} Top devices grouped by region
      */
-    getTopDevicesByRegion(reservations) {
+    getTopDevicesByRegion(reservations, monthsBack) {
         const deviceStats = {};
 
         // Group by region and device
@@ -164,12 +166,12 @@ class StatisticsService {
             deviceStats[region][device].push(reservation);
         });
 
-        // Calculate stats and sort by days used
+        // Calculate stats and sort by days used (clipped to timeframe)
         const result = {};
         Object.keys(deviceStats).forEach(region => {
             const deviceArray = Object.entries(deviceStats[region])
                 .map(([device, reservations]) => {
-                    const uniqueDays = this.calculateUniqueDaysUsed(reservations);
+                    const uniqueDays = this.calculateUniqueDaysUsedWithinTimeframe(reservations, monthsBack);
                     return {
                         device,
                         daysUsed: uniqueDays,
@@ -187,10 +189,11 @@ class StatisticsService {
 
     /**
      * Get top 10 active users
-     * @param {Reservation[]} reservations - Reservations to analyze
+     * @param {Reservation[]} reservations - Reservations to analyze (already filtered by timeframe)
+     * @param {number} monthsBack - Selected timeframe for clipping calculations
      * @returns {Array} Top users array with reservations, devices, and days
      */
-    getTopUsers(reservations) {
+    getTopUsers(reservations, monthsBack) {
         const userStats = {};
 
         // Group reservations by user
@@ -208,10 +211,10 @@ class StatisticsService {
             userStats[user].devices.add(reservation.device);
         });
 
-        // Calculate metrics for each user
+        // Calculate metrics for each user (clipped to timeframe)
         const usersArray = Object.entries(userStats)
             .map(([user, data]) => {
-                const uniqueDays = this.calculateUniqueDaysUsed(data.reservations);
+                const uniqueDays = this.calculateUniqueDaysUsedWithinTimeframe(data.reservations, monthsBack);
                 return {
                     user,
                     numberOfReservations: data.reservations.length,
@@ -301,6 +304,96 @@ class StatisticsService {
             const days = Math.ceil((range.end - range.start) / (1000 * 60 * 60 * 24)) + 1;
             totalDays += days;
         });
+
+        return totalDays;
+    }
+
+    /**
+     * Calculate unique days used within a specific timeframe (clips reservations to timeframe)
+     * @param {Reservation[]} reservations - Reservations for a specific device or user
+     * @param {number} monthsBack - Number of months back (0 for all time)
+     * @returns {number} Number of unique days used within the timeframe
+     */
+    calculateUniqueDaysUsedWithinTimeframe(reservations, monthsBack) {
+        if (reservations.length === 0) return 0;
+        
+        // Calculate timeframe boundaries
+        const now = new Date();
+        const timeframeStart = monthsBack > 0 ? new Date(now.getTime() - (this.monthsToDays(monthsBack) * 24 * 60 * 60 * 1000)) : null;
+        const timeframeEnd = now;
+
+        // Debug logging for first few calculations
+        if (reservations.length > 0 && reservations[0].device && reservations[0].device.includes('US01-FG-701G')) {
+            console.log('Debug timeframe calculation:', {
+                device: reservations[0].device,
+                monthsBack,
+                now: now.toISOString(),
+                timeframeStart: timeframeStart ? timeframeStart.toISOString() : 'null',
+                timeframeEnd: timeframeEnd.toISOString(),
+                reservationCount: reservations.length,
+                sampleReservation: {
+                    start: reservations[0].startDate.toISOString(),
+                    end: reservations[0].endDate.toISOString()
+                }
+            });
+        }
+
+        // Convert reservations to date ranges and clip to timeframe
+        const dateRanges = reservations.map(r => {
+            let start = new Date(r.startDate);
+            let end = new Date(r.endDate);
+            
+            // Clip to timeframe if specified
+            if (timeframeStart) {
+                start = new Date(Math.max(start.getTime(), timeframeStart.getTime()));
+                end = new Date(Math.min(end.getTime(), timeframeEnd.getTime()));
+                
+                // Skip if reservation is completely outside timeframe
+                if (start > end) return null;
+            }
+            
+            return { start, end };
+        }).filter(range => range !== null).sort((a, b) => a.start - b.start);
+
+        if (dateRanges.length === 0) return 0;
+
+        // Merge overlapping ranges
+        const mergedRanges = [];
+        let currentRange = dateRanges[0];
+
+        for (let i = 1; i < dateRanges.length; i++) {
+            const nextRange = dateRanges[i];
+            
+            // If ranges overlap or are adjacent, merge them
+            if (nextRange.start <= currentRange.end) {
+                currentRange.end = new Date(Math.max(currentRange.end, nextRange.end));
+            } else {
+                // No overlap, save current range and start new one
+                mergedRanges.push(currentRange);
+                currentRange = nextRange;
+            }
+        }
+        mergedRanges.push(currentRange);
+
+        // Calculate total unique days within timeframe
+        let totalDays = 0;
+        mergedRanges.forEach(range => {
+            const days = Math.ceil((range.end - range.start) / (1000 * 60 * 60 * 24)) + 1;
+            totalDays += days;
+        });
+
+        // Debug logging for problematic cases
+        if (reservations.length > 0 && reservations[0].device && reservations[0].device.includes('US01-FG-701G')) {
+            console.log('Debug clipped calculation result:', {
+                device: reservations[0].device,
+                totalDays,
+                mergedRanges: mergedRanges.map(r => ({
+                    start: r.start.toISOString(),
+                    end: r.end.toISOString(),
+                    days: Math.ceil((r.end - r.start) / (1000 * 60 * 60 * 24)) + 1
+                }))
+            });
+        }
 
         return totalDays;
     }

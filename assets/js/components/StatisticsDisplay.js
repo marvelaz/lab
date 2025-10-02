@@ -100,13 +100,13 @@ class StatisticsDisplay {
             this.displaySummaryInfo(statistics.summary);
         }
         
-        // Display device utilization
+        // Display device analytics
         this.displayDeviceUtilization(statistics.deviceUtilization);
+        this.displayUtilizationHeatmap(statistics.utilizationHeatmap);
+        this.displayConflictAnalysis(statistics.conflictAnalysis);
+        this.displayEfficiencyMetrics(statistics.efficiencyMetrics);
         
-        // Display top devices by region
-        this.displayTopDevicesByRegion(statistics.topDevicesByRegion);
-        
-        // Display top users
+        // Display user analytics
         this.displayTopUsers(statistics.topUsers);
     }
 
@@ -390,4 +390,143 @@ class StatisticsDisplay {
         
         this.showNoDataMessage();
     }
-}
+}  
+  /**
+     * Display utilization heatmap
+     * @param {Object} heatmapData - Heatmap data
+     */
+    displayUtilizationHeatmap(heatmapData) {
+        const container = document.getElementById('utilizationHeatmap');
+        if (!container || !heatmapData) return;
+
+        const { weekdayPatterns, peakDay, lowDay } = heatmapData;
+
+        let html = '<div class="heatmap-summary">';
+        html += `<div class="insight-box">`;
+        html += `<div class="insight-item">📈 <strong>Peak:</strong> ${peakDay.day} (${peakDay.avgUtilization}%)</div>`;
+        html += `<div class="insight-item">📉 <strong>Low:</strong> ${lowDay.day} (${lowDay.avgUtilization}%)</div>`;
+        html += `</div>`;
+        html += '</div>';
+
+        html += '<div class="weekday-chart">';
+        weekdayPatterns.forEach(day => {
+            const barHeight = Math.max(day.avgUtilization, 5); // Minimum 5% for visibility
+            const colorClass = day.avgUtilization >= 70 ? 'high' : day.avgUtilization >= 40 ? 'medium' : 'low';
+            
+            html += `
+                <div class="weekday-bar">
+                    <div class="bar-container">
+                        <div class="bar ${colorClass}" style="height: ${barHeight}%"></div>
+                    </div>
+                    <div class="bar-label">${day.day.substring(0, 3)}</div>
+                    <div class="bar-value">${day.avgUtilization}%</div>
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        container.innerHTML = html;
+    }
+
+    /**
+     * Display conflict analysis
+     * @param {Object} conflictData - Conflict analysis data
+     */
+    displayConflictAnalysis(conflictData) {
+        const container = document.getElementById('conflictAnalysis');
+        if (!container || !conflictData) return;
+
+        const { totalConflicts, topBottlenecks, recommendations } = conflictData;
+
+        let html = '<div class="conflict-summary">';
+        html += `<div class="metric-highlight">`;
+        html += `<span class="metric-number">${totalConflicts}</span>`;
+        html += `<span class="metric-label">Total Conflicts</span>`;
+        html += `</div>`;
+        html += '</div>';
+
+        if (topBottlenecks.length > 0) {
+            html += '<div class="bottleneck-list">';
+            topBottlenecks.slice(0, 5).forEach((bottleneck, index) => {
+                const severity = bottleneck.conflicts >= 5 ? 'high' : bottleneck.conflicts >= 3 ? 'medium' : 'low';
+                html += `
+                    <div class="bottleneck-item ${severity}">
+                        <div class="bottleneck-info">
+                            <div class="device-name">${bottleneck.device}</div>
+                            <div class="region-name">${bottleneck.region}</div>
+                        </div>
+                        <div class="conflict-stats">
+                            <span class="conflict-count">${bottleneck.conflicts}</span>
+                            <span class="impact-days">${bottleneck.impactDays} days impact</span>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+        } else {
+            html += '<div class="no-conflicts">✅ No significant conflicts detected</div>';
+        }
+
+        if (recommendations.length > 0) {
+            html += '<div class="recommendations">';
+            html += '<h4>💡 Recommendations</h4>';
+            recommendations.forEach(rec => {
+                html += `<div class="recommendation-item">• ${rec}</div>`;
+            });
+            html += '</div>';
+        }
+
+        container.innerHTML = html;
+    }
+
+    /**
+     * Display efficiency metrics
+     * @param {Object} efficiencyData - Efficiency metrics data
+     */
+    displayEfficiencyMetrics(efficiencyData) {
+        const container = document.getElementById('efficiencyMetrics');
+        if (!container || !efficiencyData) return;
+
+        const { 
+            avgBookingLeadTime, 
+            avgActualDuration, 
+            earlyTerminationRate, 
+            lastMinuteBookingRate,
+            efficiencyOpportunities 
+        } = efficiencyData;
+
+        let html = '<div class="efficiency-metrics">';
+        
+        html += '<div class="metrics-grid">';
+        html += `
+            <div class="metric-item">
+                <div class="metric-value">${avgBookingLeadTime}</div>
+                <div class="metric-label">Avg Lead Time (days)</div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-value">${avgActualDuration}</div>
+                <div class="metric-label">Avg Duration (days)</div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-value">${earlyTerminationRate}%</div>
+                <div class="metric-label">Early Terminations</div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-value">${lastMinuteBookingRate}%</div>
+                <div class="metric-label">Last-minute Bookings</div>
+            </div>
+        `;
+        html += '</div>';
+
+        if (efficiencyOpportunities.length > 0) {
+            html += '<div class="opportunities">';
+            html += '<h4>🎯 Opportunities</h4>';
+            efficiencyOpportunities.forEach(opp => {
+                html += `<div class="opportunity-item">• ${opp}</div>`;
+            });
+            html += '</div>';
+        }
+
+        html += '</div>';
+        container.innerHTML = html;
+    }

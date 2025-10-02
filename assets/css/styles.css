@@ -2708,7 +2708,7 @@ emote Hands Analytics Styles */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
     padding: 16px;
     background: #f8f9fa;
     border: 1px solid #e9ecef;
@@ -2739,22 +2739,62 @@ emote Hands Analytics Styles */
     font-size: 14px;
 }
 
-.stats-section {
-    margin-bottom: 30px;
+/* Analytics Sections */
+.analytics-section {
+    margin-bottom: 40px;
     background: white;
     border: 1px solid #e9ecef;
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.stats-title {
-    background: #f8f9fa;
-    padding: 16px 20px;
-    margin: 0;
-    border-bottom: 1px solid #e9ecef;
-    font-size: 18px;
-    font-weight: 600;
+.section-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 24px 30px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.section-title {
+    margin: 0 0 8px 0;
+    font-size: 24px;
+    font-weight: 700;
     color: #333;
+    letter-spacing: -0.5px;
+}
+
+.section-subtitle {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+    font-weight: 400;
+}
+
+/* Analytics Grid */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1px;
+    background: #e9ecef;
+}
+
+.analytics-grid.single-column {
+    grid-template-columns: 1fr;
+}
+
+.analytics-card {
+    background: white;
+    padding: 24px;
+    min-height: 300px;
+}
+
+.card-title {
+    margin: 0 0 20px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #495057;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f8f9fa;
 }
 
 .stats-summary-section .summary-item {
@@ -3090,4 +3130,256 @@ emote Hands Analytics Styles */
 .device-item .device-reservations {
     color: #666;
     font-size: 12px;
+}/*
+ New Analytics Components */
+
+/* Heatmap Styles */
+.heatmap-summary {
+    margin-bottom: 20px;
+}
+
+.insight-box {
+    display: flex;
+    gap: 20px;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #007bff;
+}
+
+.insight-item {
+    font-size: 14px;
+    color: #495057;
+}
+
+.weekday-chart {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    height: 120px;
+    padding: 20px 0;
+    gap: 8px;
+}
+
+.weekday-bar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.bar-container {
+    height: 80px;
+    width: 100%;
+    display: flex;
+    align-items: end;
+    justify-content: center;
+}
+
+.bar {
+    width: 24px;
+    border-radius: 3px 3px 0 0;
+    transition: all 0.3s ease;
+}
+
+.bar.high { background: #28a745; }
+.bar.medium { background: #ffc107; }
+.bar.low { background: #6c757d; }
+
+.bar-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.bar-value {
+    font-size: 11px;
+    color: #6c757d;
+}
+
+/* Conflict Analysis Styles */
+.conflict-summary {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.metric-highlight {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+}
+
+.metric-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: #dc3545;
+    line-height: 1;
+}
+
+.metric-label {
+    font-size: 12px;
+    color: #6c757d;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+.bottleneck-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.bottleneck-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 6px;
+    border-left: 4px solid;
+}
+
+.bottleneck-item.high { 
+    background: #fff5f5; 
+    border-left-color: #dc3545; 
+}
+
+.bottleneck-item.medium { 
+    background: #fffbf0; 
+    border-left-color: #ffc107; 
+}
+
+.bottleneck-item.low { 
+    background: #f8f9fa; 
+    border-left-color: #6c757d; 
+}
+
+.bottleneck-info .device-name {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.bottleneck-info .region-name {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.conflict-stats {
+    text-align: right;
+}
+
+.conflict-count {
+    font-weight: 700;
+    color: #dc3545;
+    font-size: 16px;
+    display: block;
+}
+
+.impact-days {
+    font-size: 11px;
+    color: #6c757d;
+}
+
+.no-conflicts {
+    text-align: center;
+    padding: 20px;
+    color: #28a745;
+    font-weight: 600;
+}
+
+/* Efficiency Metrics Styles */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.metric-item {
+    text-align: center;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.metric-item .metric-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #007bff;
+    line-height: 1;
+}
+
+.metric-item .metric-label {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+/* Recommendations and Opportunities */
+.recommendations, .opportunities {
+    margin-top: 16px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #17a2b8;
+}
+
+.recommendations h4, .opportunities h4 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: #495057;
+    font-weight: 600;
+}
+
+.recommendation-item, .opportunity-item {
+    font-size: 13px;
+    color: #495057;
+    margin-bottom: 6px;
+    line-height: 1.4;
+}
+
+/* Responsive Design Updates */
+@media (max-width: 768px) {
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-header {
+        padding: 20px;
+    }
+    
+    .section-title {
+        font-size: 20px;
+    }
+    
+    .analytics-card {
+        padding: 20px;
+        min-height: 250px;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .insight-box {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .weekday-chart {
+        height: 100px;
+    }
+    
+    .bar-container {
+        height: 60px;
+    }
 }

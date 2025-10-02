@@ -83,22 +83,49 @@
                         <div id="statsTimeframeInfo" class="timeframe-info"></div>
                     </div>
 
-                    <!-- Device Utilization Section -->
-                    <div class="stats-section">
-                        <h3 class="stats-title">📱 Device Utilization (Days of Use)</h3>
-                        <div id="deviceUtilizationChart"></div>
+                    <!-- Device Analytics Section -->
+                    <div class="analytics-section">
+                        <div class="section-header">
+                            <h2 class="section-title">📱 Device Analytics</h2>
+                            <div class="section-subtitle">Equipment utilization, patterns, and efficiency insights</div>
+                        </div>
+                        
+                        <div class="analytics-grid">
+                            <div class="analytics-card">
+                                <h3 class="card-title">Current Utilization</h3>
+                                <div id="deviceUtilizationChart"></div>
+                            </div>
+                            
+                            <div class="analytics-card">
+                                <h3 class="card-title">Usage Patterns</h3>
+                                <div id="utilizationHeatmap"></div>
+                            </div>
+                            
+                            <div class="analytics-card">
+                                <h3 class="card-title">Resource Conflicts</h3>
+                                <div id="conflictAnalysis"></div>
+                            </div>
+                            
+                            <div class="analytics-card">
+                                <h3 class="card-title">Efficiency Metrics</h3>
+                                <div id="efficiencyMetrics"></div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Top Devices by Region Section -->
-                    <div class="stats-section">
-                        <h3 class="stats-title">🏆 Top 10 Devices by Region</h3>
-                        <div id="topDevicesByRegion"></div>
-                    </div>
-
-                    <!-- Top Users Section -->
-                    <div class="stats-section">
-                        <h3 class="stats-title">👥 Top 10 Active Users</h3>
-                        <div id="topUsersTable"></div>
+                    <!-- User Analytics Section -->
+                    <div class="analytics-section">
+                        <div class="section-header">
+                            <h2 class="section-title">👥 User Analytics</h2>
+                            <div class="section-subtitle">User activity and productivity insights</div>
+                        </div>
+                        
+                        <div class="analytics-grid single-column">
+                            <div class="analytics-card">
+                                <h3 class="card-title">Top Active Users</h3>
+                                <div id="topUsersTable"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

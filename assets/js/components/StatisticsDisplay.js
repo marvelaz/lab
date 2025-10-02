@@ -445,12 +445,14 @@ class StatisticsDisplay {
         let html = '<div class="conflict-summary">';
         html += '<div class="metric-highlight">';
         html += '<span class="metric-number">' + totalConflicts + '</span>';
-        html += '<span class="metric-label">Total Conflicts</span>';
+        html += '<span class="metric-label">Total Conflict Pairs</span>';
         html += '</div>';
+        html += '<div class="conflict-explanation">Each pair represents two overlapping reservations for the same device</div>';
         html += '</div>';
 
         if (topBottlenecks.length > 0) {
             html += '<div class="bottleneck-list">';
+            html += '<div class="bottleneck-header">Top Conflict Devices (showing ' + Math.min(topBottlenecks.length, 5) + ' of ' + topBottlenecks.length + ' total)</div>';
             topBottlenecks.slice(0, 5).forEach((bottleneck) => {
                 const severity = bottleneck.conflicts >= 5 ? 'high' : bottleneck.conflicts >= 3 ? 'medium' : 'low';
                 html += '<div class="bottleneck-item ' + severity + '">';

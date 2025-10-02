@@ -28,7 +28,7 @@ class StatisticsService {
         const statistics = {
             deviceUtilization: this.getDeviceUtilization(filteredReservations, monthsBack),
             utilizationHeatmap: this.getSimpleHeatmap(filteredReservations),
-            conflictAnalysis: this.getSimpleConflicts(reservations),
+            conflictAnalysis: this.getSimpleConflicts(this.getConflictRelevantReservations(reservations, monthsBack)),
             efficiencyMetrics: this.getSimpleEfficiency(filteredReservations),
             topUsers: this.getTopUsers(filteredReservations, monthsBack),
             summary: this.getStatisticsSummary(filteredReservations, monthsBack)
@@ -388,6 +388,25 @@ class StatisticsService {
     }
 
     /**
+     * Get reservations relevant for conflict analysis within timeframe
+     * @param {Reservation[]} reservations - All reservations
+     * @param {number} monthsBack - Selected timeframe
+     * @returns {Reservation[]} Reservations that could have conflicts in the timeframe
+     */
+    getConflictRelevantReservations(reservations, monthsBack) {
+        if (monthsBack === 0) return reservations; // All time
+
+        const now = new Date();
+        const timeframeStart = new Date(now.getTime() - (this.monthsToDays(monthsBack) * 24 * 60 * 60 * 1000));
+
+        // Include reservations that overlap with the timeframe (not just start within it)
+        return reservations.filter(reservation => {
+            // Include if reservation overlaps with timeframe
+            return reservation.startDate <= now && reservation.endDate >= timeframeStart;
+        });
+    }
+
+    /**
      * Clear statistics cache
      */
     clearCache() {
@@ -432,11 +451,18 @@ class StatisticsService {
         const conflicts = [];
         const deviceConflicts = {};
 
-        // Simple conflict detection
+        // Simple conflict detection - only count each conflict pair once
+        const processedPairs = new Set();
+
         for (let i = 0; i < reservations.length; i++) {
             for (let j = i + 1; j < reservations.length; j++) {
                 const res1 = reservations[i];
                 const res2 = reservations[j];
+
+                // Create unique pair identifier
+                const pairId = [res1.id, res2.id].sort().join('-');
+                if (processedPairs.has(pairId)) continue;
+                processedPairs.add(pairId);
 
                 if (res1.device === res2.device &&
                     res1.labRegion === res2.labRegion &&
@@ -444,14 +470,27 @@ class StatisticsService {
 
                     conflicts.push({
                         device: res1.device,
-                        region: res1.labRegion
+                        region: res1.labRegion,
+                        reservation1: res1.id,
+                        reservation2: res2.id
                     });
 
                     const key = res1.labRegion + '_' + res1.device;
                     if (!deviceConflicts[key]) {
-                        deviceConflicts[key] = { device: res1.device, region: res1.labRegion, conflicts: 0 };
+                        deviceConflicts[key] = {
+                            device: res1.device,
+                            region: res1.labRegion,
+                            conflicts: 0,
+                            impactDays: 0
+                        };
                     }
                     deviceConflicts[key].conflicts++;
+
+                    // Calculate impact (overlapping days)
+                    const overlapStart = new Date(Math.max(res1.startDate, res2.startDate));
+                    const overlapEnd = new Date(Math.min(res1.endDate, res2.endDate));
+                    const overlapDays = Math.ceil((overlapEnd - overlapStart) / (1000 * 60 * 60 * 24)) + 1;
+                    deviceConflicts[key].impactDays += overlapDays;
                 }
             }
         }
@@ -460,12 +499,28 @@ class StatisticsService {
             .sort((a, b) => b.conflicts - a.conflicts)
             .slice(0, 5);
 
+        // Generate smarter recommendations
+        const recommendations = [];
+        if (topBottlenecks.length > 0) {
+            const topBottleneck = topBottlenecks[0];
+            if (topBottleneck.conflicts >= 3) {
+                recommendations.push('Consider acquiring additional ' + topBottleneck.device + ' units for ' + topBottleneck.region + ' region');
+            }
+            if (conflicts.length > 10) {
+                recommendations.push('High conflict rate - review booking policies and advance planning');
+            }
+        }
+
+        if (recommendations.length === 0) {
+            recommendations.push(conflicts.length === 0 ?
+                'No conflicts detected in selected timeframe' :
+                'Conflict levels appear manageable');
+        }
+
         return {
             totalConflicts: conflicts.length,
             topBottlenecks: topBottlenecks,
-            recommendations: conflicts.length > 0 ?
-                ['Review scheduling for high-conflict devices'] :
-                ['No significant conflicts detected']
+            recommendations: recommendations
         };
     }
 

@@ -460,7 +460,7 @@ class StatisticsDisplay {
                 html += '</div>';
                 html += '<div class="conflict-stats">';
                 html += '<span class="conflict-count">' + bottleneck.conflicts + '</span>';
-                html += '<span class="impact-days">conflicts</span>';
+                html += '<span class="impact-days">' + (bottleneck.impactDays || 0) + ' days impact</span>';
                 html += '</div>';
                 html += '</div>';
             });
